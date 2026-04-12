@@ -72,6 +72,7 @@
         .test-card:hover { border-color: #27BBD4; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 
         .view-hidden { display: none; }
+        .floating-wa { position: fixed; bottom: 24px; right: 24px; z-index: 100; animation: float 3s ease-in-out infinite; }
         
         .specialty-pill { transition: all 0.4s ease; }
         .specialty-pill:hover { transform: translateY(-5px); background: white; box-shadow: 0 15px 30px -10px rgba(44, 94, 180, 0.15); }
@@ -90,7 +91,13 @@
         <span class="text-sm font-bold tracking-wide">Added to Cart</span>
     </div>
 
-    <!-- Two-Tier Navigation Header -->
+    <!-- Floating WhatsApp CTA (Hidden on Detail/Cart View on Mobile due to Sticky Footer) -->
+    <a id="global-wa-btn" href="https://wa.me/919380116362?text=Hello%20Winpath%20Team!%20I'd%20like%20to%20book%20a%20test." target="_blank" rel="noopener noreferrer" class="floating-wa flex items-center gap-3 bg-brand-green text-white px-5 py-3 rounded-full shadow-2xl hover:scale-105 transition-transform">
+        <span class="text-[10px] font-black uppercase tracking-widest hidden sm:block text-right leading-none">Book Home<br>Collection</span>
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 0 5.495 0 12.05c0 2.096.547 4.142 1.588 5.945L0 24l6.105-1.604a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    </a>
+
+    <!-- Navigation Header -->
     <header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 flex flex-col">
         <!-- Top Bar: Logo & Actions -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-20 flex justify-between items-center">
@@ -102,19 +109,15 @@
             <div class="flex items-center gap-4 sm:gap-6">
                 <!-- Social Media Icons (Desktop & Tablet) -->
                 <div class="hidden sm:flex items-center gap-4 border-r border-gray-200 pr-4 sm:pr-6">
-                    <!-- INSERT YOUR LINKEDIN URL HERE -->
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="text-gray-400 hover:text-brand-blue transition-colors">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                     </a>
-                    <!-- INSERT YOUR INSTAGRAM URL HERE -->
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="text-gray-400 hover:text-pink-600 transition-colors">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 1.77-6.98 6.979-.059 1.28-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 5.208 2.622 6.78 6.981 6.979 1.28.059 1.689.073 4.948.073 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-1.771 6.979-6.979.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-5.208-2.624-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                     </a>
-                    <!-- INSERT YOUR FACEBOOK URL HERE -->
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="text-gray-400 hover:text-blue-600 transition-colors">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
                     </a>
-                    <!-- INSERT YOUR X (TWITTER) URL HERE -->
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" class="text-gray-400 hover:text-gray-900 transition-colors">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     </a>
@@ -233,6 +236,7 @@
         <!-- Home View -->
         <div id="home-view">
             <main class="pt-28 xl:pt-40">
+                <!-- Hero Section -->
                 <section class="py-12 md:py-32 px-4 max-w-7xl mx-auto">
                     <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 text-center lg:text-left">
                         <div class="order-1 flex flex-col items-center lg:items-start">
@@ -254,11 +258,12 @@
                         </div>
                         <div class="order-2 relative w-full group">
                             <div class="absolute -inset-6 sm:-inset-10 brand-gradient-bg rounded-full opacity-5 blur-[80px] animate-pulse-slow"></div>
-                            <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/Gemini_Generated_Image_6y9d06y9d06y9d06.png" class="relative rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full h-auto object-cover border-[8px] border-white transition-transform duration-1000 group-hover:scale-[1.02]">
+                            <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/Gemini_Generated_Image_6y9d06y9d06y9d06.png" alt="Diagnostic Laboratory" class="relative rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full h-auto object-cover border-[8px] border-white transition-transform duration-1000 group-hover:scale-[1.02]">
                         </div>
                     </div>
                 </section>
 
+                <!-- Health Packages -->
                 <section class="py-20 sm:py-32 bg-white">
                     <div class="max-w-7xl mx-auto px-4">
                         <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-8 mb-16">
@@ -274,11 +279,12 @@
                         </div>
                         
                         <div id="featured-packages-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <!-- Populated dynamically via JS -->
+                            <!-- Populated dynamically via populateFeaturedPackages() in JS -->
                         </div>
                     </div>
                 </section>
 
+                <!-- Diagnostic Specialties -->
                 <section class="py-20 bg-gray-50 border-t border-gray-100">
                     <div class="max-w-7xl mx-auto px-4 text-center">
                         <div class="inline-flex items-center gap-3 px-4 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-[9px] font-black uppercase tracking-[0.3em] mb-6 uppercase tracking-widest">Laboratory Expertise</div>
@@ -413,6 +419,7 @@
             </div>
         </div>
 
+        <!-- Privacy View -->
         <div id="privacy-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
             <div class="max-w-3xl mx-auto text-left">
                 <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Privacy Policy.</h1>
@@ -424,6 +431,7 @@
             </div>
         </div>
 
+        <!-- Terms View -->
         <div id="terms-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6 text-left">
             <div class="max-w-3xl mx-auto text-left">
                 <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Terms of Use.</h1>
@@ -435,6 +443,7 @@
             </div>
         </div>
 
+        <!-- About View -->
         <div id="about-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
             <div class="max-w-4xl mx-auto text-left">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-blue font-bold text-[10px] uppercase tracking-widest mb-8">The Winpath Story</div>
@@ -469,11 +478,13 @@
                     <p class="text-gray-500 text-sm mb-12 max-w-2xl leading-relaxed">The milestones that define our commitment to precision and the goals we are building towards for our patients.</p>
                     
                     <div id="roadmap-container" class="relative border-l-2 border-brand-cyan/20 ml-3 sm:ml-5 space-y-8 pb-4">
-                        </div>
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Contact View -->
         <div id="contact-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-6">
             <div class="max-w-4xl mx-auto text-center">
                 <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-16 text-center">Contact <span class="brand-gradient-text italic">Us.</span></h1>
@@ -496,6 +507,7 @@
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="bg-brand-dark py-20 border-t border-gray-800">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 mb-20 text-left">
@@ -531,18 +543,19 @@
         </div>
     </footer>
 
-    <!-- EXTERNAL DATA FILES (Ensure data.js, billing.js & patient-details.js exist on GitHub) -->
+    <!-- EXTERNAL DATA FILES (Ensure data.js, billing.js, patient-details.js, and cart.js exist on GitHub) -->
     <script src="data.js"></script>
     <script src="billing.js"></script>
     <script src="patient-details.js"></script>
+    <script src="cart.js"></script>
 
     <!-- MAIN APP LOGIC -->
     <script id="winpath-logic">
+        // Global state for rateCard data and navigation
         let rateCard = [];
         let navHistory = ['home'];
-        let shoppingCart = [];
-        let userLocationLink = "";
 
+        // Security Utility: Sanitize text to prevent DOM-based XSS
         function escapeHTML(str) {
             if (!str) return '';
             return String(str).replace(/[&<>'"]/g, match => {
@@ -550,6 +563,7 @@
             });
         }
 
+        // Mobile Menu Toggling
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             const menuIcon = document.getElementById('menu-icon');
@@ -560,6 +574,7 @@
             closeIcon.classList.toggle('hidden', isOpen);
         }
 
+        // Core Routing Function
         function switchView(viewId, pushToHistory = true) {
             const views = ['home-view', 'packages-page-view', 'contact-view', 'about-view', 'test-detail-view', 'privacy-view', 'terms-view', 'cart-view'];
             views.forEach(v => {
@@ -574,14 +589,19 @@
                 window.scrollTo(0, 0);
             }
 
+            // Close mobile menu if it's open
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu && !mobileMenu.classList.contains('hidden')) toggleMobileMenu();
             
-            if (viewId === 'cart') renderCartView();
+            // If navigating to cart, render the cart UI (requires cart.js to be loaded)
+            if (viewId === 'cart' && typeof renderCartView === 'function') {
+                renderCartView();
+            }
             
+            // Hide the global floating WhatsApp button if inside the Cart or Detail view
             const globalWa = document.getElementById('global-wa-btn');
             if (globalWa) {
-                if (viewId === 'test-detail') {
+                if (viewId === 'test-detail' || viewId === 'cart') {
                     globalWa.classList.add('hidden');
                 } else {
                     globalWa.classList.remove('hidden');
@@ -589,206 +609,16 @@
             }
         }
 
+        // Back button navigation
         function goBack() {
             if (navHistory.length > 1) {
-                navHistory.pop();
-                const prev = navHistory.pop();
+                navHistory.pop(); // Remove current view
+                const prev = navHistory.pop(); // Get previous view
                 switchView(prev, true);
             } else { switchView('home'); }
         }
 
-        function addToCart(testId) {
-            const test = rateCard.find(t => t.id === testId);
-            if (test && !shoppingCart.some(item => item.id === testId)) {
-                shoppingCart.push(test);
-                updateCartBadge();
-                showToast();
-            }
-        }
-
-        function removeFromCart(testId) {
-            shoppingCart = shoppingCart.filter(item => item.id !== testId);
-            updateCartBadge();
-            renderCartView();
-        }
-
-        function updateCartBadge() {
-            const count = shoppingCart.length;
-            document.getElementById('cart-badge').innerText = count;
-            document.getElementById('mobile-cart-count').innerText = count;
-        }
-
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 2500);
-        }
-
-        function renderCartView() {
-            const emptyMsg = document.getElementById('empty-cart-msg');
-            const cartContent = document.getElementById('cart-content');
-            const itemList = document.getElementById('cart-items-list');
-
-            if (shoppingCart.length === 0) {
-                emptyMsg.classList.remove('hidden');
-                cartContent.classList.add('hidden');
-            } else {
-                emptyMsg.classList.add('hidden');
-                cartContent.classList.remove('hidden');
-
-                itemList.innerHTML = '';
-                let subtotal = 0;
-
-                shoppingCart.forEach(item => {
-                    const priceNum = parseInt(item.price.replace(/,/g, ''));
-                    subtotal += priceNum;
-                    
-                    itemList.innerHTML += `
-                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                            <div>
-                                <h4 class="font-black text-sm text-gray-900">${escapeHTML(item.name)}</h4>
-                                <span class="text-xs font-bold text-brand-blue uppercase tracking-widest">₹${escapeHTML(item.price)}</span>
-                            </div>
-                            <button onclick="removeFromCart('${escapeHTML(item.id)}')" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    `;
-                });
-
-                let config = typeof BILLING_CONFIG !== 'undefined' ? BILLING_CONFIG : { homeCollectionFee: 0, convenienceCharge: 0, discountPercentage: 0 };
-                
-                const discountVal = (subtotal * (config.discountPercentage || 0)) / 100;
-                const total = subtotal + config.homeCollectionFee + config.convenienceCharge - discountVal;
-                
-                document.getElementById('bill-subtotal').innerText = `₹${subtotal.toLocaleString()}`;
-                document.getElementById('bill-collection').innerText = `₹${config.homeCollectionFee}`;
-                document.getElementById('bill-convenience').innerText = `₹${config.convenienceCharge}`;
-                
-                const discountEl = document.getElementById('bill-discount');
-                if (config.discountPercentage > 0 && subtotal > 0) {
-                    discountEl.innerText = `-₹${Math.round(discountVal).toLocaleString()} (${config.discountPercentage}%)`;
-                } else {
-                    discountEl.innerText = `₹0`;
-                }
-
-                document.getElementById('bill-total').innerText = `₹${Math.max(0, Math.round(total)).toLocaleString()}`;
-            }
-        }
-
-        function locateUser() {
-            const statusEl = document.getElementById('location-status');
-            statusEl.innerText = "Locating (Please allow permissions)...";
-            statusEl.className = "text-xs font-semibold text-brand-blue italic";
-
-            if (navigator.geolocation) {
-                // Added robust options for mobile GPS capture
-                const options = {
-                    enableHighAccuracy: true,
-                    timeout: 10000, // Stop trying after 10 seconds
-                    maximumAge: 0
-                };
-
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    userLocationLink = `https://maps.google.com/?q=${lat},${lng}`;
-                    
-                    statusEl.innerText = "GPS Location Pinned Successfully! ✓";
-                    statusEl.className = "text-xs font-black uppercase tracking-widest text-brand-green mt-1";
-                }, error => {
-                    console.error("GPS Error:", error);
-                    let errorMsg = "GPS Error. Please type your address manually.";
-                    
-                    // Specific error handling so the user isn't stuck waiting
-                    if (error.code === 1) errorMsg = "GPS Access Denied. Please type your address manually.";
-                    else if (error.code === 2) errorMsg = "GPS Signal Unavailable. Please type your address.";
-                    else if (error.code === 3) errorMsg = "Location Request Timed Out. Please type your address.";
-                    
-                    statusEl.innerText = errorMsg;
-                    statusEl.className = "text-xs font-bold text-red-500 italic mt-1";
-                }, options);
-            } else {
-                statusEl.innerText = "Geolocation not supported by this browser. Please type address.";
-                statusEl.className = "text-xs font-bold text-red-500 italic mt-1";
-            }
-        }
-
-        async function proceedToWhatsApp() {
-            const name = document.getElementById('checkout-name').value.trim();
-            const mobile = document.getElementById('checkout-mobile').value.trim();
-            const email = document.getElementById('checkout-email').value.trim();
-            const address = document.getElementById('checkout-address').value.trim();
-
-            if (!name || !mobile || (!address && !userLocationLink)) {
-                alert("Please fill out your Name, Mobile Number, and provide an Address/Location.");
-                return;
-            }
-
-            let message = `*NEW HOME COLLECTION BOOKING*\n\n`;
-            message += `*Patient Details:*\n`;
-            message += `Name: ${name}\n`;
-            message += `Mobile: ${mobile}\n`;
-            if (email) message += `Email: ${email}\n`;
-            if (userLocationLink) message += `GPS Link: ${userLocationLink}\n`;
-            if (address) message += `Address Note: ${address}\n\n`;
-
-            message += `*Selected Tests:*\n`;
-            let subtotal = 0;
-            shoppingCart.forEach((item, index) => {
-                message += `${index + 1}. ${item.name} (₹${item.price})\n`;
-                subtotal += parseInt(item.price.replace(/,/g, ''));
-            });
-
-            let config = typeof BILLING_CONFIG !== 'undefined' ? BILLING_CONFIG : { homeCollectionFee: 0, convenienceCharge: 0, discountPercentage: 0 };
-            const discountVal = (subtotal * (config.discountPercentage || 0)) / 100;
-            const total = subtotal + config.homeCollectionFee + config.convenienceCharge - discountVal;
-
-            message += `\n*Billing Summary:*\n`;
-            message += `Subtotal: ₹${subtotal.toLocaleString()}\n`;
-            message += `Home Collection: ₹${config.homeCollectionFee}\n`;
-            message += `Convenience Fee: ₹${config.convenienceCharge}\n`;
-            
-            if (config.discountPercentage > 0 && subtotal > 0) {
-                message += `Discount (${config.discountPercentage}%): -₹${Math.round(discountVal).toLocaleString()}\n`;
-            }
-            message += `*Total Amount: ₹${Math.max(0, Math.round(total)).toLocaleString()}*`;
-
-            // --- Google Sheets Integration ---
-            const checkoutBtn = document.getElementById('checkout-btn');
-            const originalBtnText = checkoutBtn.innerText;
-            checkoutBtn.innerText = "Processing Details...";
-            checkoutBtn.disabled = true;
-
-            const patientData = {
-                name: name,
-                mobile: mobile,
-                email: email || "N/A",
-                address: address || "N/A",
-                gpsLink: userLocationLink || "N/A",
-                tests: shoppingCart.map(item => item.name).join(", "),
-                totalAmount: Math.max(0, Math.round(total))
-            };
-
-            // Safely push to Google Sheets via external patient-details.js
-            if (typeof recordPatientDetails === 'function') {
-                await recordPatientDetails(patientData);
-            }
-            
-            checkoutBtn.innerText = originalBtnText;
-            checkoutBtn.disabled = false;
-            // ---------------------------------
-
-            const encodedMessage = encodeURIComponent(message);
-            const waUrl = `https://wa.me/919380116362?text=${encodedMessage}`;
-            
-            shoppingCart = [];
-            updateCartBadge();
-            switchView('home');
-            
-            window.open(waUrl, '_blank', 'noopener,noreferrer');
-        }
-
+        // Filtering Logic for Mega Menu
         function filterByCategory(type, value) {
             switchView('packages-page');
             document.getElementById('menu-title').innerHTML = `${escapeHTML(value)} <span class="brand-gradient-text italic">Tests.</span>`;
@@ -800,6 +630,7 @@
             clearSearchInput(false); 
         }
 
+        // Debounce Logic for Text Search
         let searchTimeout;
         function handleSearchInput() {
             const input = document.getElementById('test-search');
@@ -811,6 +642,7 @@
             searchTimeout = setTimeout(() => { filterTests(); }, 300);
         }
 
+        // Clear Search text
         function clearSearchInput(executeFilter = true) {
             const input = document.getElementById('test-search');
             input.value = '';
@@ -818,13 +650,27 @@
             if (executeFilter) filterTests();
         }
 
-        function filterTests() {
-            const rawQuery = document.getElementById('test-search').value.toLowerCase();
-            const query = rawQuery.replace(/[^a-z0-9\s-]/g, '');
-            if(query === "") { renderTests(rateCard.slice(0, 18)); } 
-            else { renderTests(rateCard.filter(t => t.name.toLowerCase().includes(query) || (t.params && t.params.toLowerCase().includes(query)))); }
+        // Clears Category Filters
+        function clearFilter() {
+            clearSearchInput(false);
+            document.getElementById('clear-btn').classList.add('hidden');
+            document.getElementById('menu-title').innerHTML = `Test <span class="brand-gradient-text italic">Menu.</span>`;
+            document.getElementById('menu-subtitle').innerText = "Browsing 100+ clinical investigations";
+            filterTests();
         }
 
+        // Executes the text filter safely
+        function filterTests() {
+            const rawQuery = document.getElementById('test-search').value.toLowerCase();
+            const query = rawQuery.replace(/[^a-z0-9\s-]/g, ''); // Sanitization
+            if(query === "") { 
+                renderTests(rateCard.slice(0, 18)); // Show only a chunk initially if empty
+            } else { 
+                renderTests(rateCard.filter(t => t.name.toLowerCase().includes(query) || (t.params && t.params.toLowerCase().includes(query)))); 
+            }
+        }
+
+        // UI Generator for specific Test Detail Page
         function showTestDetail(testId) {
             const test = rateCard.find(t => t.id === testId);
             if (!test) return;
@@ -868,6 +714,7 @@
                     </div>
                 </div>
                 
+                <!-- Mobile Sticky Footer CTA -->
                 <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-200 p-6 pb-8 z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[2rem] flex justify-between items-center animate-in slide-in-from-bottom-full">
                     <div>
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Service Fee</p>
@@ -879,6 +726,7 @@
             switchView('test-detail');
         }
 
+        // Renders catalog list in the "Test Menu" page
         function renderTests(tests) {
             const container = document.getElementById('test-results');
             container.innerHTML = tests.length > 0 ? '' : '<p class="col-span-full py-20 text-center font-bold text-gray-400">No clinical parameters matched your search</p>';
@@ -903,6 +751,7 @@
             });
         }
 
+        // Populates the 4 featured cards on the Home view dynamically
         function populateFeaturedPackages() {
             const container = document.getElementById('featured-packages-grid');
             if(!container) return;
@@ -934,6 +783,7 @@
             });
         }
 
+        // Dynamically renders the timeline in About Us view
         function renderRoadmap() {
             const container = document.getElementById('roadmap-container');
             if (!container) return;
@@ -963,7 +813,9 @@
             }
         }
 
+        // Initialize App
         window.onload = () => { 
+            // Data successfully merges upon window load so it's ready for cart.js and other functions
             if (typeof healthPackages !== 'undefined' && typeof investigations !== 'undefined') {
                 rateCard = [...healthPackages, ...investigations];
             }

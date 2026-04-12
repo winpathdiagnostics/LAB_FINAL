@@ -1,32 +1,34 @@
 // =====================================================================
-// PATIENT & LOCATION DETAILS (Google Sheets Integration)
+// CUSTOMER & LOCATION DETAILS (Google Sheets Integration)
 // =====================================================================
 
 // IMPORTANT: Replace the URL below with your actual Google Apps Script Web App URL
-const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBANlQ3bOSxO0-rGPyN2Hkd8jH7g7Q6ytMUziusu81ZeVW2Azodrv-cUkv6iZ9vBvV/exec";
+// Example: "https://script.google.com/macros/s/AKfycb.../exec"
+const GOOGLE_SHEETS_WEB_APP_URL = "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE";
 
 /**
- * Sends patient details, cart summary, and location data to Google Sheets.
+ * Silently submits checkout data to a Google Sheet in the background.
  */
-async function recordPatientDetails(patientData) {
-    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL === "https://script.google.com/macros/s/AKfycbxBANlQ3bOSxO0-rGPyN2Hkd8jH7g7Q6ytMUziusu81ZeVW2Azodrv-cUkv6iZ9vBvV/exec") {
-        console.warn("Google Sheets URL not configured. Skipping database record.");
-        return; 
+async function recordPatientDetails(customerData) {
+    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL.includes("YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE")) {
+        console.warn("Google Sheets URL not configured. Skipping background tracking.");
+        return;
     }
 
     try {
+        // Send the data invisibly using 'no-cors' to bypass browser security blocks
         await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
             method: 'POST',
-            mode: 'no-cors', // <-- THE FIX: This forces the browser to bypass CORS restrictions
+            mode: 'no-cors', // CRITICAL: This bypasses the CORS block on static sites
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8', 
+                // Using text/plain avoids strict CORS preflight checks. Google Apps Script parses this as JSON automatically.
+                'Content-Type': 'text/plain;charset=utf-8'
             },
-            body: JSON.stringify(patientData)
+            body: JSON.stringify(customerData)
         });
         
-        // Note: With 'no-cors', the browser hides the response, but the data successfully reaches Google!
-        console.log("Patient details payload successfully dispatched to Google Sheets.");
+        console.log("Order successfully logged to Google Sheets.");
     } catch (error) {
-        console.error("Error recording to Google Sheets:", error);
+        console.error("Error submitting to Google Sheets:", error);
     }
 }

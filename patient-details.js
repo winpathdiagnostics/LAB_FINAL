@@ -20,10 +20,6 @@ async function recordPatientDetails(customerData) {
         await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors', // CRITICAL: This bypasses the CORS block on static sites
-            headers: {
-                // Using text/plain avoids strict CORS preflight checks. Google Apps Script parses this as JSON automatically.
-                'Content-Type': 'text/plain;charset=utf-8'
-            },
             body: JSON.stringify(customerData)
         });
         

@@ -4,14 +4,14 @@
 
 // IMPORTANT: Replace the URL below with your actual Google Apps Script Web App URL
 // This URL is obtained after clicking Deploy > New Deployment in Google Apps Script.
-const GOOGLE_SHEETS_WEB_APP_URL = "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE";
+const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyD26G_gNDTbMZKebGUUfmYIs2voSO6gRa3OmyNYjY2gFDpf7hnkukb7JGAWarAIF27Xw/exec";
 
 /**
  * Silently submits checkout data to a Google Sheet in the background.
  * Uses the 'Super-Catcher' URL parameter logic to bypass body-stripping issues.
  */
 async function recordPatientDetails(customerData) {
-    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL.includes("YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE")) {
+    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbyD26G_gNDTbMZKebGUUfmYIs2voSO6gRa3OmyNYjY2gFDpf7hnkukb7JGAWarAIF27Xw/exec")) {
         console.warn("Google Sheets URL not configured. Skipping background tracking.");
         return;
     }

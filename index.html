@@ -72,7 +72,6 @@
         .test-card:hover { border-color: #27BBD4; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 
         .view-hidden { display: none; }
-        .floating-wa { position: fixed; bottom: 24px; right: 24px; z-index: 100; animation: float 3s ease-in-out infinite; }
         
         .specialty-pill { transition: all 0.4s ease; }
         .specialty-pill:hover { transform: translateY(-5px); background: white; box-shadow: 0 15px 30px -10px rgba(44, 94, 180, 0.15); }
@@ -80,6 +79,10 @@
         /* Toast Notification */
         #toast { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(100px); opacity: 0; }
         #toast.show { transform: translateY(0); opacity: 1; }
+        
+        .floating-wa { position: fixed; bottom: 24px; right: 24px; z-index: 100; animation: float 3s ease-in-out infinite; }
+        .back-btn { transition: transform 0.2s ease; }
+        .back-btn:hover { transform: translateX(-5px); }
     </style>
 </head>
 
@@ -91,13 +94,13 @@
         <span class="text-sm font-bold tracking-wide">Added to Cart</span>
     </div>
 
-    <!-- Floating WhatsApp CTA (Hidden on Detail/Cart View on Mobile due to Sticky Footer) -->
+    <!-- Floating WhatsApp CTA (Hidden inside cart/detail views logic) -->
     <a id="global-wa-btn" href="https://wa.me/919380116362?text=Hello%20Winpath%20Team!%20I'd%20like%20to%20book%20a%20test." target="_blank" rel="noopener noreferrer" class="floating-wa flex items-center gap-3 bg-brand-green text-white px-5 py-3 rounded-full shadow-2xl hover:scale-105 transition-transform">
         <span class="text-[10px] font-black uppercase tracking-widest hidden sm:block text-right leading-none">Book Home<br>Collection</span>
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 0 5.495 0 12.05c0 2.096.547 4.142 1.588 5.945L0 24l6.105-1.604a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
     </a>
 
-    <!-- Navigation Header -->
+    <!-- Top Header & Desktop Navigation -->
     <header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 flex flex-col">
         <!-- Top Bar: Logo & Actions -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-20 flex justify-between items-center">
@@ -123,7 +126,7 @@
                     </a>
                 </div>
 
-                <!-- Cart Button -->
+                <!-- Desktop Cart Button -->
                 <button onclick="switchView('cart')" class="relative p-2 text-gray-500 hover:text-brand-blue transition-colors group flex items-center gap-2">
                     <div class="relative">
                         <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -147,7 +150,7 @@
             </div>
         </div>
 
-        <!-- Secondary Nav Bar (Desktop Only) -->
+        <!-- Secondary Nav Bar (Desktop Mega Menu) -->
         <div class="hidden xl:flex w-full h-16 border-t border-gray-50 bg-gray-50/30">
             <nav class="max-w-7xl mx-auto px-8 w-full flex justify-center space-x-12 items-center h-full">
                 <a href="javascript:void(0)" onclick="switchView('home')" class="text-sm font-black text-gray-500 hover:text-brand-blue uppercase tracking-widest transition-colors h-full flex items-center">Home</a>
@@ -204,7 +207,7 @@
             </nav>
         </div>
 
-        <!-- Mobile Menu Drawer -->
+        <!-- Mobile Drawer Navigation -->
         <div id="mobile-menu" class="hidden xl:hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl overflow-y-auto max-h-[80vh]">
             <div class="px-6 py-8 space-y-6 flex flex-col items-center uppercase font-black text-base tracking-widest">
                 <a href="javascript:void(0)" onclick="switchView('home')">Home</a>
@@ -213,7 +216,6 @@
                 <a href="javascript:void(0)" onclick="switchView('about')">About Us</a>
                 <button onclick="switchView('contact')" class="w-full py-4 brand-gradient-bg text-white rounded-2xl">Contact Us</button>
 
-                <!-- Social Links for Mobile -->
                 <div class="flex items-center gap-6 pt-6 border-t border-gray-100 w-full justify-center">
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="text-gray-400 hover:text-brand-blue transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
@@ -222,7 +224,7 @@
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 1.77-6.98 6.979-.059 1.28-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 5.208 2.622 6.78 6.981 6.979 1.28.059 1.689.073 4.948.073 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-1.771 6.979-6.979.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-5.208-2.624-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                     </a>
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="text-gray-400 hover:text-blue-600 transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
                     </a>
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" class="text-gray-400 hover:text-gray-900 transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -233,10 +235,9 @@
     </header>
 
     <div id="main-content">
-        <!-- Home View -->
+        <!-- 1. HOME VIEW -->
         <div id="home-view">
             <main class="pt-28 xl:pt-40">
-                <!-- Hero Section -->
                 <section class="py-12 md:py-32 px-4 max-w-7xl mx-auto">
                     <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 text-center lg:text-left">
                         <div class="order-1 flex flex-col items-center lg:items-start">
@@ -263,7 +264,6 @@
                     </div>
                 </section>
 
-                <!-- Health Packages -->
                 <section class="py-20 sm:py-32 bg-white">
                     <div class="max-w-7xl mx-auto px-4">
                         <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-8 mb-16">
@@ -279,12 +279,11 @@
                         </div>
                         
                         <div id="featured-packages-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <!-- Populated dynamically via populateFeaturedPackages() in JS -->
+                            <!-- Populated dynamically via JS -->
                         </div>
                     </div>
                 </section>
 
-                <!-- Diagnostic Specialties -->
                 <section class="py-20 bg-gray-50 border-t border-gray-100">
                     <div class="max-w-7xl mx-auto px-4 text-center">
                         <div class="inline-flex items-center gap-3 px-4 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-[9px] font-black uppercase tracking-[0.3em] mb-6 uppercase tracking-widest">Laboratory Expertise</div>
@@ -304,7 +303,7 @@
             </main>
         </div>
 
-        <!-- Catalog View -->
+        <!-- 2. CATALOG VIEW -->
         <div id="packages-page-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-4">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 text-left">
@@ -328,7 +327,7 @@
             </div>
         </div>
 
-        <!-- Detail View -->
+        <!-- 3. TEST DETAIL VIEW -->
         <div id="test-detail-view" class="view-hidden pt-32 xl:pt-48 pb-32 lg:pb-20 bg-white min-h-screen text-left">
             <div class="max-w-4xl mx-auto px-6">
                 <button onclick="goBack()" class="back-btn flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-blue mb-12">
@@ -339,7 +338,7 @@
             </div>
         </div>
 
-        <!-- Cart & Checkout View -->
+        <!-- 4. CART & CHECKOUT VIEW -->
         <div id="cart-view" class="view-hidden pt-32 xl:pt-40 pb-20 bg-gray-50 min-h-screen px-4 sm:px-6">
             <div class="max-w-6xl mx-auto text-left">
                 <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-12">Your <span class="brand-gradient-text italic">Cart.</span></h1>
@@ -419,7 +418,7 @@
             </div>
         </div>
 
-        <!-- Privacy View -->
+        <!-- 5. STATIC TEXT VIEWS -->
         <div id="privacy-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
             <div class="max-w-3xl mx-auto text-left">
                 <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Privacy Policy.</h1>
@@ -431,7 +430,6 @@
             </div>
         </div>
 
-        <!-- Terms View -->
         <div id="terms-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6 text-left">
             <div class="max-w-3xl mx-auto text-left">
                 <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Terms of Use.</h1>
@@ -443,7 +441,6 @@
             </div>
         </div>
 
-        <!-- About View -->
         <div id="about-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
             <div class="max-w-4xl mx-auto text-left">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-blue font-bold text-[10px] uppercase tracking-widest mb-8">The Winpath Story</div>
@@ -478,13 +475,12 @@
                     <p class="text-gray-500 text-sm mb-12 max-w-2xl leading-relaxed">The milestones that define our commitment to precision and the goals we are building towards for our patients.</p>
                     
                     <div id="roadmap-container" class="relative border-l-2 border-brand-cyan/20 ml-3 sm:ml-5 space-y-8 pb-4">
-                        <!-- Populated by JS -->
+                        <!-- Populated dynamically via JS -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Contact View -->
         <div id="contact-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-6">
             <div class="max-w-4xl mx-auto text-center">
                 <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-16 text-center">Contact <span class="brand-gradient-text italic">Us.</span></h1>
@@ -507,7 +503,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- MAIN FOOTER -->
     <footer class="bg-brand-dark py-20 border-t border-gray-800">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 mb-20 text-left">
@@ -543,286 +539,14 @@
         </div>
     </footer>
 
-    <!-- EXTERNAL DATA FILES (Ensure data.js, billing.js, patient-details.js, and cart.js exist on GitHub) -->
+    <!-- EXTERNAL JS DEPENDENCIES -->
+    <!-- Make sure these exist in your repository alongside index.html -->
     <script src="data.js"></script>
     <script src="billing.js"></script>
     <script src="patient-details.js"></script>
-    <script src="cart.js"></script>
+    <script src="main.js"></script>
+    
+    <!-- Optional: Inline trigger script if needed, but window.onload inside main.js covers startup -->
 
-    <!-- MAIN APP LOGIC -->
-    <script id="winpath-logic">
-        // Global state for rateCard data and navigation
-        let rateCard = [];
-        let navHistory = ['home'];
-
-        // Security Utility: Sanitize text to prevent DOM-based XSS
-        function escapeHTML(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>'"]/g, match => {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
-            });
-        }
-
-        // Mobile Menu Toggling
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            const menuIcon = document.getElementById('menu-icon');
-            const closeIcon = document.getElementById('close-icon');
-            const isOpen = !menu.classList.contains('hidden');
-            menu.classList.toggle('hidden', isOpen);
-            menuIcon.classList.toggle('hidden', !isOpen);
-            closeIcon.classList.toggle('hidden', isOpen);
-        }
-
-        // Core Routing Function
-        function switchView(viewId, pushToHistory = true) {
-            const views = ['home-view', 'packages-page-view', 'contact-view', 'about-view', 'test-detail-view', 'privacy-view', 'terms-view', 'cart-view'];
-            views.forEach(v => {
-                const el = document.getElementById(v);
-                if (el) el.classList.add('view-hidden');
-            });
-            
-            const target = document.getElementById(viewId + '-view');
-            if (target) {
-                target.classList.remove('view-hidden');
-                if (pushToHistory) navHistory.push(viewId);
-                window.scrollTo(0, 0);
-            }
-
-            // Close mobile menu if it's open
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu && !mobileMenu.classList.contains('hidden')) toggleMobileMenu();
-            
-            // If navigating to cart, render the cart UI (requires cart.js to be loaded)
-            if (viewId === 'cart' && typeof renderCartView === 'function') {
-                renderCartView();
-            }
-            
-            // Hide the global floating WhatsApp button if inside the Cart or Detail view
-            const globalWa = document.getElementById('global-wa-btn');
-            if (globalWa) {
-                if (viewId === 'test-detail' || viewId === 'cart') {
-                    globalWa.classList.add('hidden');
-                } else {
-                    globalWa.classList.remove('hidden');
-                }
-            }
-        }
-
-        // Back button navigation
-        function goBack() {
-            if (navHistory.length > 1) {
-                navHistory.pop(); // Remove current view
-                const prev = navHistory.pop(); // Get previous view
-                switchView(prev, true);
-            } else { switchView('home'); }
-        }
-
-        // Filtering Logic for Mega Menu
-        function filterByCategory(type, value) {
-            switchView('packages-page');
-            document.getElementById('menu-title').innerHTML = `${escapeHTML(value)} <span class="brand-gradient-text italic">Tests.</span>`;
-            document.getElementById('menu-subtitle').innerText = `Browsing specialized screenings for ${escapeHTML(value)}`;
-            document.getElementById('clear-btn').classList.remove('hidden');
-            
-            const filtered = rateCard.filter(t => t.category && t.category[type] === value);
-            renderTests(filtered);
-            clearSearchInput(false); 
-        }
-
-        // Debounce Logic for Text Search
-        let searchTimeout;
-        function handleSearchInput() {
-            const input = document.getElementById('test-search');
-            const clearBtn = document.getElementById('search-clear-icon');
-            if (input.value.length > 0) clearBtn.classList.remove('hidden');
-            else clearBtn.classList.add('hidden');
-
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => { filterTests(); }, 300);
-        }
-
-        // Clear Search text
-        function clearSearchInput(executeFilter = true) {
-            const input = document.getElementById('test-search');
-            input.value = '';
-            document.getElementById('search-clear-icon').classList.add('hidden');
-            if (executeFilter) filterTests();
-        }
-
-        // Clears Category Filters
-        function clearFilter() {
-            clearSearchInput(false);
-            document.getElementById('clear-btn').classList.add('hidden');
-            document.getElementById('menu-title').innerHTML = `Test <span class="brand-gradient-text italic">Menu.</span>`;
-            document.getElementById('menu-subtitle').innerText = "Browsing 100+ clinical investigations";
-            filterTests();
-        }
-
-        // Executes the text filter safely
-        function filterTests() {
-            const rawQuery = document.getElementById('test-search').value.toLowerCase();
-            const query = rawQuery.replace(/[^a-z0-9\s-]/g, ''); // Sanitization
-            if(query === "") { 
-                renderTests(rateCard.slice(0, 18)); // Show only a chunk initially if empty
-            } else { 
-                renderTests(rateCard.filter(t => t.name.toLowerCase().includes(query) || (t.params && t.params.toLowerCase().includes(query)))); 
-            }
-        }
-
-        // UI Generator for specific Test Detail Page
-        function showTestDetail(testId) {
-            const test = rateCard.find(t => t.id === testId);
-            if (!test) return;
-            const content = document.getElementById('detail-content');
-
-            const safeName = escapeHTML(test.name);
-            const safePrice = escapeHTML(test.price);
-            const safeImportance = escapeHTML(test.importance);
-            const safeParams = escapeHTML(test.params);
-
-            let bodyHtml = "";
-            if (test.isPackage) {
-                bodyHtml = `
-                    <div class="space-y-12">
-                        <div>
-                            <h3 class="text-[10px] font-black uppercase text-brand-blue tracking-[0.2em] mb-4 underline underline-offset-4 decoration-brand-cyan">Clinical Importance</h3>
-                            <p class="text-xl text-gray-600 font-medium leading-relaxed">${safeImportance}</p>
-                        </div>
-                        <div class="bg-gray-50 p-10 rounded-[3rem] border border-gray-100">
-                            <h3 class="text-[10px] font-black uppercase text-brand-blue tracking-[0.2em] mb-6">Tested Parameters</h3>
-                            <p class="text-lg font-bold text-gray-900 italic leading-relaxed tracking-tight underline decoration-brand-cyan/20 underline-offset-8">${safeParams}</p>
-                        </div>
-                    </div>`;
-            } else {
-                bodyHtml = `<div class="bg-gray-50 p-10 rounded-[3rem] border border-gray-100"><p class="text-lg text-gray-500 font-medium leading-relaxed">This standalone investigation is processed using ISO 15189:2022 standardized protocols. Results will be delivered within 24 hours.</p></div>`;
-            }
-
-            content.innerHTML = `
-                <div class="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <h2 class="text-4xl sm:text-6xl font-black text-gray-900 mb-8 tracking-tighter uppercase leading-tight">${safeName}</h2>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                        <div class="lg:col-span-2">${bodyHtml}</div>
-                        <div class="hidden lg:block">
-                            <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 sticky top-32">
-                                <div class="text-[9px] font-black text-gray-400 uppercase mb-2">Service Fee</div>
-                                <div class="text-5xl font-black brand-gradient-text tracking-tighter mb-8">₹${safePrice}</div>
-                                <button onclick="addToCart('${escapeHTML(test.id)}')" class="block w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-xl hover:scale-[1.02] active:scale-95 transition-all">Add to Cart</button>
-                                <p class="text-[8px] text-center text-gray-400 mt-6 font-bold uppercase tracking-widest italic">Digital reports in 24 hours</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Mobile Sticky Footer CTA -->
-                <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-200 p-6 pb-8 z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[2rem] flex justify-between items-center animate-in slide-in-from-bottom-full">
-                    <div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Service Fee</p>
-                        <div class="text-3xl font-black brand-gradient-text tracking-tighter leading-none">₹${safePrice}</div>
-                    </div>
-                    <button onclick="addToCart('${escapeHTML(test.id)}')" class="px-8 py-4 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Add to Cart</button>
-                </div>
-            `;
-            switchView('test-detail');
-        }
-
-        // Renders catalog list in the "Test Menu" page
-        function renderTests(tests) {
-            const container = document.getElementById('test-results');
-            container.innerHTML = tests.length > 0 ? '' : '<p class="col-span-full py-20 text-center font-bold text-gray-400">No clinical parameters matched your search</p>';
-            const sorted = [...tests].sort((a,b) => (b.isPackage ? 1 : 0) - (a.isPackage ? 1 : 0));
-            sorted.forEach(test => {
-                const card = document.createElement('div');
-                const isPkg = test.isPackage;
-                const safeName = escapeHTML(test.name);
-                const safePrice = escapeHTML(test.price);
-                const safeParams = escapeHTML(test.params);
-
-                card.className = `test-card p-8 rounded-[2.5rem] shadow-sm flex flex-col h-full ${isPkg ? 'bg-brand-blue/5 border-brand-blue/20' : 'bg-white'}`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-6 cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')">
-                        <h4 class="text-lg font-black text-gray-900 leading-tight text-left hover:text-brand-blue transition-colors">${safeName}</h4>
-                        <span class="text-xl font-black brand-gradient-text ml-4 shrink-0">₹${safePrice}</span>
-                    </div>
-                    ${isPkg ? `<p class="text-[10px] text-brand-blue font-black uppercase tracking-widest mb-4 text-left">Health Package</p><div class="bg-gray-50/80 p-5 rounded-2xl flex-grow mb-6 text-left cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')"><span class="text-[8px] font-black text-brand-blue uppercase block mb-2 opacity-50">Parameters</span><p class="text-[10px] text-gray-600 font-semibold italic line-clamp-2">${safeParams}</p></div>` : '<div class="flex-grow cursor-pointer" onclick="showTestDetail(\'' + escapeHTML(test.id) + '\')"></div>'}
-                    <button onclick="addToCart('${escapeHTML(test.id)}')" class="w-full py-3 mt-4 bg-brand-cyan/10 text-brand-blue hover:bg-brand-blue hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors">Add to Cart</button>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // Populates the 4 featured cards on the Home view dynamically
-        function populateFeaturedPackages() {
-            const container = document.getElementById('featured-packages-grid');
-            if(!container) return;
-            container.innerHTML = "";
-            
-            const featuredIds = ['p-3', 'p-4', 'p-5', 'p-2']; 
-            
-            featuredIds.forEach(id => {
-                const pkg = rateCard.find(t => t.id === id);
-                if(pkg) {
-                    const card = document.createElement('div');
-                    card.className = `bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-xl transition-all ${id==='p-5' ? 'transform scale-[1.03] z-10 border-2 border-brand-cyan/20 shadow-2xl relative' : ''}`;
-                    
-                    let badgeHtml = id === 'p-5' ? `<div class="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 brand-gradient-bg rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-lg">Most Popular</div>` : '';
-                    
-                    card.innerHTML = `
-                        ${badgeHtml}
-                        <div class="cursor-pointer" onclick="showTestDetail('${escapeHTML(pkg.id)}')">
-                            <h3 class="text-2xl font-black text-gray-900 mb-2 hover:text-brand-blue transition-colors">${escapeHTML(pkg.name)}</h3>
-                            <p class="text-[11px] text-gray-400 font-medium leading-relaxed mb-8 italic line-clamp-2">${escapeHTML(pkg.importance)}</p>
-                            <div class="text-3xl font-black text-brand-blue mb-8">₹${escapeHTML(pkg.price)}</div>
-                        </div>
-                        <div class="mt-auto">
-                            <button onclick="addToCart('${escapeHTML(pkg.id)}')" class="w-full py-4 ${id==='p-5' ? 'brand-gradient-bg text-white shadow-xl hover:scale-[1.02]' : 'bg-gray-50 text-brand-blue hover:bg-gray-100'} text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all">Add to Cart</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                }
-            });
-        }
-
-        // Dynamically renders the timeline in About Us view
-        function renderRoadmap() {
-            const container = document.getElementById('roadmap-container');
-            if (!container) return;
-            container.innerHTML = '';
-            
-            if (typeof roadmapGoals !== 'undefined') {
-                roadmapGoals.forEach((goal) => {
-                    const isCompleted = goal.status === 'completed';
-                    const dotStyle = isCompleted ? 'brand-gradient-bg border-white' : 'bg-white border-brand-cyan/40';
-                    const textStyle = isCompleted ? 'text-gray-900' : 'text-gray-400';
-                    
-                    const safeYear = escapeHTML(goal.year);
-                    const safeTitle = escapeHTML(goal.title);
-                    const safeDesc = escapeHTML(goal.desc);
-
-                    container.innerHTML += `
-                        <div class="relative pl-8 sm:pl-12 group cursor-default">
-                            <div class="absolute left-[-9px] top-2 w-4 h-4 rounded-full border-2 ${dotStyle} group-hover:scale-150 transition-transform duration-300 shadow-sm z-10"></div>
-                            <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 group-hover:border-brand-cyan/40">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-brand-cyan mb-2 block">${safeYear} ${isCompleted ? '' : '(Goal)'}</span>
-                                <h4 class="text-xl font-black ${textStyle} mb-2 tracking-tight group-hover:text-brand-blue transition-colors">${safeTitle}</h4>
-                                <p class="text-sm text-gray-500 leading-relaxed">${safeDesc}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-        }
-
-        // Initialize App
-        window.onload = () => { 
-            // Data successfully merges upon window load so it's ready for cart.js and other functions
-            if (typeof healthPackages !== 'undefined' && typeof investigations !== 'undefined') {
-                rateCard = [...healthPackages, ...investigations];
-            }
-            filterTests(); 
-            renderRoadmap(); 
-            populateFeaturedPackages();
-        };
-    </script>
 </body>
 </html>

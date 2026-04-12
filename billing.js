@@ -7,5 +7,5 @@
 const BILLING_CONFIG = {
     homeCollectionFee: 200,   // ₹ Flat fee added for the home visit service
     convenienceCharge: 50,    // ₹ Digital handling or platform fee
-    discountPercentage: 0     // % Discount to subtract (e.g., 10 for 10% off)
+    discountPercentage: 10     // % Discount to subtract (e.g., 10 for 10% off)
 };

@@ -4,14 +4,14 @@
 // IMPORTANT: Replace the URL below with your actual Google Apps Script Web App URL
 // See the setup guide to learn how to generate this URL.
 
-const GOOGLE_SHEETS_WEB_APP_URL = "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE";
+const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBANlQ3bOSxO0-rGPyN2Hkd8jH7g7Q6ytMUziusu81ZeVW2Azodrv-cUkv6iZ9vBvV/exec";
 
 /**
  * Sends patient details, cart summary, and location data to Google Sheets.
  * Uses text/plain to seamlessly bypass CORS restrictions on static GitHub Pages.
  */
 async function recordPatientDetails(patientData) {
-    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL === "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE") {
+    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL === "https://script.google.com/macros/s/AKfycbxBANlQ3bOSxO0-rGPyN2Hkd8jH7g7Q6ytMUziusu81ZeVW2Azodrv-cUkv6iZ9vBvV/exec") {
         console.warn("Google Sheets URL not configured. Skipping database record.");
         return; // Exits gracefully so WhatsApp handoff isn't interrupted
     }

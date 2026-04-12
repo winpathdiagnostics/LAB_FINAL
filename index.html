@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com data:;">
+    
+    <title>Winpath Diagnostics | Precision Pathology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#2C5EB4',
+                            cyan: '#27BBD4',
+                            green: '#5DCE9E',
+                            dark: '#0B131D',
+                        }
+                    },
+                    fontFamily: { sans: ['Outfit', 'Inter', 'sans-serif'] },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-soft': 'bounce-soft 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        'pulse-slow': { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.6' } },
+                        'bounce-soft': { '0%, 100%': { transform: 'translateY(-8px)' }, '50%': { transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #27BBD4; border-radius: 10px; }
+        
+        body { font-family: 'Outfit', sans-serif; background-color: #ffffff; -webkit-tap-highlight-color: transparent; }
+        
+        .brand-gradient-text {
+            background: linear-gradient(to right, #2C5EB4, #27BBD4, #5DCE9E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-gradient-bg {
+            background: linear-gradient(to right, #2C5EB4, #27BBD4, #5DCE9E);
+        }
+
+        .mega-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .group:hover .mega-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .test-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; cursor: pointer; }
+        .test-card:hover { border-color: #27BBD4; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        .view-hidden { display: none; }
+        
+        .specialty-pill { transition: all 0.4s ease; }
+        .specialty-pill:hover { transform: translateY(-5px); background: white; box-shadow: 0 15px 30px -10px rgba(44, 94, 180, 0.15); }
+        
+        /* Toast Notification */
+        #toast { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(100px); opacity: 0; }
+        #toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+
+<body class="text-gray-800 antialiased selection:bg-brand-cyan selection:text-white overflow-x-hidden">
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-brand-dark text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 pointer-events-none">
+        <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        <span class="text-sm font-bold tracking-wide">Added to Cart</span>
+    </div>
+
+    <header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 flex flex-col">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-20 flex justify-between items-center">
+            <div class="flex items-center cursor-pointer shrink-0" onclick="switchView('home')">
+                <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/WINPATH-LOGO-OG2.png" alt="Winpath" class="h-8 sm:h-10 w-auto object-contain">
+            </div>
+
+            <div class="flex items-center gap-4 sm:gap-6">
+                <button onclick="switchView('cart')" class="relative p-2 text-gray-500 hover:text-brand-blue transition-colors group flex items-center gap-2">
+                    <div class="relative">
+                        <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span id="cart-badge" class="absolute -top-1 -right-2 bg-brand-cyan text-white text-[9px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white transition-transform">0</span>
+                    </div>
+                    <span class="hidden sm:block text-xs font-black uppercase tracking-widest mt-1">Cart</span>
+                </button>
+
+                <button onclick="switchView('contact')" class="hidden sm:block relative group active:scale-95 transition-all">
+                    <span class="absolute -inset-1.5 brand-gradient-bg rounded-xl blur-md opacity-20 group-hover:opacity-60 transition-opacity"></span>
+                    <div class="relative px-6 py-2.5 brand-gradient-bg text-sm font-black uppercase tracking-widest rounded-xl shadow-lg text-white">Contact Us</div>
+                </button>
+
+                <div class="xl:hidden flex items-center">
+                    <button onclick="toggleMobileMenu()" class="p-2 text-brand-blue focus:outline-none">
+                        <svg id="menu-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        <svg id="close-icon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden xl:flex w-full h-16 border-t border-gray-50 bg-gray-50/30">
+            <nav class="max-w-7xl mx-auto px-8 w-full flex justify-center space-x-12 items-center h-full">
+                <a href="javascript:void(0)" onclick="switchView('home')" class="text-sm font-black text-gray-500 hover:text-brand-blue uppercase tracking-widest transition-colors h-full flex items-center">Home</a>
+                
+                <div class="relative h-full flex items-center group">
+                    <button class="text-sm font-black text-gray-500 uppercase tracking-widest flex items-center gap-1 group-hover:text-brand-blue h-full">
+                        Health Risks <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="mega-menu absolute top-full left-0 w-48 bg-white shadow-2xl rounded-b-2xl border-t-2 border-brand-blue p-4 space-y-2 text-left">
+                        <a href="javascript:void(0)" onclick="filterByCategory('risk', 'Heart')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Heart</a>
+                        <a href="javascript:void(0)" onclick="filterByCategory('risk', 'Thyroid')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Thyroid</a>
+                        <a href="javascript:void(0)" onclick="filterByCategory('risk', 'Liver')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Liver</a>
+                        <a href="javascript:void(0)" onclick="filterByCategory('risk', 'Kidney')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Kidney</a>
+                        <a href="javascript:void(0)" onclick="filterByCategory('risk', 'Diabetes')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Diabetes</a>
+                    </div>
+                </div>
+
+                <div class="relative h-full flex items-center group">
+                    <button class="text-sm font-black text-gray-500 uppercase tracking-widest flex items-center gap-1 group-hover:text-brand-blue h-full">
+                        Health Conditions <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="mega-menu absolute top-full left-1/2 -translate-x-1/2 w-[600px] bg-white shadow-2xl rounded-b-2xl border-t-2 border-brand-cyan p-8 grid grid-cols-3 gap-x-8 gap-y-4 text-left">
+                        <div class="space-y-2">
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Cardiovascular')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Cardiovascular</a>
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Hypertension')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Hypertension</a>
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Gut Health')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Gut Health</a>
+                        </div>
+                        <div class="space-y-2">
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Bone Health')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Bone Health</a>
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Cancer')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Cancer</a>
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Nutrition')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Nutrition</a>
+                        </div>
+                        <div class="space-y-2">
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Sexual Wellness')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Sexual Wellness</a>
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Alcohol')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Alcohol Impact</a>
+                            <a href="javascript:void(0)" onclick="filterByCategory('condition', 'Obesity')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue">Obesity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative h-full flex items-center group">
+                    <button class="text-sm font-black text-gray-500 uppercase tracking-widest flex items-center gap-1 group-hover:text-brand-blue h-full">
+                        Health Check Packages <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="mega-menu absolute top-full right-0 w-56 bg-white shadow-2xl rounded-b-2xl border-t-2 border-brand-green p-4 space-y-2 text-right">
+                        <a href="javascript:void(0)" onclick="filterByCategory('package', 'LifeStyle')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">LifeStyle Packages</a>
+                        <a href="javascript:void(0)" onclick="filterByCategory('package', 'Men')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Men Health</a>
+                        <a href="javascript:void(0)" onclick="filterByCategory('package', 'Women')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Women Health</a>
+                        <a href="javascript:void(0)" onclick="filterByCategory('package', 'Senior')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Senior Citizens</a>
+                    </div>
+                </div>
+
+                <a href="javascript:void(0)" onclick="switchView('about')" class="text-sm font-black text-gray-500 hover:text-brand-blue uppercase tracking-widest transition-colors h-full flex items-center">About Us</a>
+            </nav>
+        </div>
+
+        <div id="mobile-menu" class="hidden xl:hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl overflow-y-auto max-h-[80vh]">
+            <div class="px-6 py-8 space-y-6 flex flex-col items-center uppercase font-black text-base tracking-widest">
+                <a href="javascript:void(0)" onclick="switchView('home')">Home</a>
+                <a href="javascript:void(0)" onclick="switchView('packages-page')">Browse Tests</a>
+                <a href="javascript:void(0)" onclick="switchView('cart')" class="text-brand-cyan">My Cart (<span id="mobile-cart-count">0</span>)</a>
+                <a href="javascript:void(0)" onclick="switchView('about')">About Us</a>
+                <button onclick="switchView('contact')" class="w-full py-4 brand-gradient-bg text-white rounded-2xl">Contact Us</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="main-content">
+        <div id="home-view">
+            <main class="pt-28 xl:pt-40">
+                <section class="py-12 md:py-32 px-4 max-w-7xl mx-auto">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 text-center lg:text-left">
+                        <div class="order-1 flex flex-col items-center lg:items-start">
+                            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-blue font-bold text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-6 shadow-sm">
+                                <span class="w-1.5 h-1.5 rounded-full brand-gradient-bg animate-pulse"></span>
+                                Strictly Adhering to ISO 15189:2022 Standards
+                            </div>
+                            <h1 class="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter mb-4 text-gray-900 leading-[1.1]">
+                                Precision Diagnostics, <br><span class="brand-gradient-text">Accurate Results.</span>
+                            </h1>
+                            <div class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-brand-blue/90 mb-8 tracking-tight italic">Exceptional Care.</div>
+                            <p class="text-base sm:text-lg text-gray-600 mb-8 font-medium max-w-2xl leading-relaxed">
+                                Bengaluru's trusted pathologist-led lab. Search our expanded catalog of <span class="text-brand-cyan font-bold">100+ clinical investigations</span> with direct home collection.
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                                <button onclick="switchView('packages-page')" class="w-full sm:w-auto px-10 py-5 brand-gradient-bg text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl text-center active:scale-95 transition-all">Book Home Collection</button>
+                                <button onclick="switchView('packages-page')" class="w-full sm:w-auto px-10 py-5 bg-white text-brand-blue font-black uppercase tracking-widest text-[10px] rounded-2xl border-2 border-brand-blue/10 hover:border-brand-blue active:scale-95 transition-all">Explore Catalog</button>
+                            </div>
+                        </div>
+                        <div class="order-2 relative w-full group">
+                            <div class="absolute -inset-6 sm:-inset-10 brand-gradient-bg rounded-full opacity-5 blur-[80px] animate-pulse-slow"></div>
+                            <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/Gemini_Generated_Image_6y9d06y9d06y9d06.png" class="relative rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full h-auto object-cover border-[8px] border-white transition-transform duration-1000 group-hover:scale-[1.02]">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="py-20 sm:py-32 bg-white">
+                    <div class="max-w-7xl mx-auto px-4">
+                        <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-8 mb-16">
+                            <div class="text-center md:text-left">
+                                <h2 class="text-5xl md:text-7xl font-black text-gray-900 tracking-tighter">
+                                    Health <span class="brand-gradient-text italic">Packages.</span>
+                                </h2>
+                                <p class="text-lg md:text-2xl text-gray-400 font-medium mt-4">Pathologist-verified screening for a proactive lifestyle.</p>
+                            </div>
+                            <button onclick="switchView('packages-page')" class="px-10 py-5 bg-white border-2 border-brand-cyan/30 rounded-2xl shadow-[0_10px_40px_-10px_rgba(39,187,212,0.3)] text-[11px] font-black uppercase tracking-widest hover:border-brand-cyan hover:shadow-[0_10px_40px_-10px_rgba(39,187,212,0.6)] transition-all animate-bounce-soft hover:animate-none group">
+                                <span class="brand-gradient-text">Explore All 100+ Tests</span>
+                            </button>
+                        </div>
+                        
+                        <div id="featured-packages-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            </div>
+                    </div>
+                </section>
+
+                <section class="py-20 bg-gray-50 border-t border-gray-100">
+                    <div class="max-w-7xl mx-auto px-4 text-center">
+                        <div class="inline-flex items-center gap-3 px-4 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-[9px] font-black uppercase tracking-[0.3em] mb-6 uppercase tracking-widest">Laboratory Expertise</div>
+                        <h2 class="text-3xl sm:text-4xl md:text-6xl font-black text-gray-900 mb-16 tracking-tighter uppercase leading-none italic">Diagnostic <span class="brand-gradient-text">Specialties.</span></h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-blue/5 border-l-4 border-brand-blue flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight">Hematology</h4></div>
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-cyan/5 border-l-4 border-brand-cyan flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight">Biochemistry</h4></div>
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-green/5 border-l-4 border-brand-green flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight">Immunology</h4></div>
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-blue/5 border-l-4 border-brand-blue flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight">Microbiology</h4></div>
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-cyan/5 border-l-4 border-brand-cyan flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight leading-tight">Clinical<br>Pathology</h4></div>
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-green/5 border-l-4 border-brand-green flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight">Cytopathology</h4></div>
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-blue/5 border-l-4 border-brand-blue flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight leading-tight">Molecular<br>Diagnostics</h4></div>
+                            <div class="specialty-pill px-6 py-6 sm:py-8 rounded-[1.5rem] sm:rounded-[2rem] bg-brand-cyan/5 border-l-4 border-brand-cyan flex items-center justify-center text-center"><h4 class="text-sm sm:text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight">Serology</h4></div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <div id="packages-page-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 text-left">
+                    <div>
+                        <h1 class="text-4xl sm:text-7xl font-black text-gray-900 tracking-tighter uppercase leading-none" id="menu-title">Test <span class="brand-gradient-text italic">Menu.</span></h1>
+                        <p class="text-gray-400 font-bold uppercase tracking-[0.3em] text-[9px] mt-4" id="menu-subtitle">Browsing 100+ clinical investigations</p>
+                    </div>
+                    <button onclick="clearFilter()" id="clear-btn" class="hidden px-8 py-3 bg-white border border-gray-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-brand-blue hover:border-brand-blue shadow-sm transition-all">Reset All</button>
+                </div>
+                <div class="max-w-2xl mb-16 relative group">
+                    <div class="absolute -inset-1 brand-gradient-bg rounded-[2rem] blur opacity-20 group-focus-within:opacity-50 transition"></div>
+                    <div class="relative bg-white rounded-[2rem] shadow-2xl flex items-center p-2 border border-gray-100">
+                        <div class="pl-6 text-brand-blue"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
+                        <input type="text" id="test-search" placeholder="Search parameters (e.g. CBC, Lipid, Diabetes)..." class="w-full px-6 py-5 text-xl outline-none rounded-2xl bg-transparent font-semibold tracking-tight text-left" oninput="handleSearchInput()">
+                        <button id="search-clear-icon" onclick="clearSearchInput()" class="hidden absolute right-6 text-gray-400 hover:text-brand-blue p-2 rounded-full focus:outline-none transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="test-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            </div>
+        </div>
+
+        <div id="test-detail-view" class="view-hidden pt-32 xl:pt-48 pb-32 lg:pb-20 bg-white min-h-screen text-left">
+            <div class="max-w-4xl mx-auto px-6">
+                <button onclick="goBack()" class="back-btn flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-blue mb-12">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Back to Catalog
+                </button>
+                <div id="detail-content" class="text-left relative"></div>
+            </div>
+        </div>
+
+        <div id="cart-view" class="view-hidden pt-32 xl:pt-40 pb-20 bg-gray-50 min-h-screen px-4 sm:px-6">
+            <div class="max-w-6xl mx-auto text-left">
+                <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-12">Your <span class="brand-gradient-text italic">Cart.</span></h1>
+                
+                <div id="empty-cart-msg" class="hidden text-center py-20 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
+                    <svg class="w-20 h-20 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <p class="text-xl font-black text-gray-400 mb-6 uppercase tracking-widest">Your cart is empty</p>
+                    <button onclick="switchView('packages-page')" class="px-8 py-4 bg-brand-blue/10 text-brand-blue text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-brand-blue hover:text-white transition-all">Browse Tests</button>
+                </div>
+
+                <div id="cart-content" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start hidden">
+                    <div class="lg:col-span-2 space-y-8">
+                        <div class="bg-white p-6 sm:p-10 rounded-[3rem] shadow-sm border border-gray-100">
+                            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue mb-8 border-b border-gray-100 pb-4">Selected Parameters</h2>
+                            <div id="cart-items-list" class="space-y-6"></div>
+                        </div>
+
+                        <div class="bg-white p-6 sm:p-10 rounded-[3rem] shadow-sm border border-gray-100">
+                            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue mb-8 border-b border-gray-100 pb-4">Patient & Location Details</h2>
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Full Name *</label>
+                                        <input type="text" id="checkout-name" class="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand-cyan transition-all text-sm font-semibold" placeholder="e.g. John Doe">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Mobile Number *</label>
+                                        <input type="tel" id="checkout-mobile" class="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand-cyan transition-all text-sm font-semibold" placeholder="+91">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Email Address (Optional)</label>
+                                    <input type="email" id="checkout-email" class="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand-cyan transition-all text-sm font-semibold" placeholder="For digital reports">
+                                </div>
+                                
+                                <div class="pt-4">
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-brand-green mb-2 block">Home Collection Address *</label>
+                                    <div class="flex flex-col gap-4">
+                                        <button onclick="locateUser()" class="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-4 bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                            Pinpoint GPS Location
+                                        </button>
+                                        <span id="location-status" class="text-xs font-semibold text-gray-400 italic">No GPS location saved.</span>
+                                        <input type="text" id="checkout-address" class="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand-cyan transition-all text-sm font-semibold mt-2" placeholder="House/Flat No., Building, Landmark">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 lg:sticky lg:top-32">
+                            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900 mb-8 border-b border-gray-100 pb-4">Final Bill</h2>
+                            
+                            <div class="space-y-4 mb-8 text-sm font-medium text-gray-600">
+                                <div class="flex justify-between"><span class="uppercase text-[9px] font-black tracking-widest">Subtotal</span><span id="bill-subtotal" class="font-bold text-gray-900">₹0</span></div>
+                                <div class="flex justify-between"><span class="uppercase text-[9px] font-black tracking-widest">Home Collection</span><span id="bill-collection" class="font-bold text-gray-900">₹0</span></div>
+                                <div class="flex justify-between"><span class="uppercase text-[9px] font-black tracking-widest">Convenience Fee</span><span id="bill-convenience" class="font-bold text-gray-900">₹0</span></div>
+                                <div class="flex justify-between text-brand-green"><span class="uppercase text-[9px] font-black tracking-widest">Discount Applied</span><span id="bill-discount" class="font-bold">-₹0</span></div>
+                            </div>
+                            
+                            <div class="border-t border-gray-100 pt-6 mb-8">
+                                <div class="flex justify-between items-end">
+                                    <span class="uppercase text-[10px] font-black tracking-widest text-gray-400">Total to Pay</span>
+                                    <span id="bill-total" class="text-4xl font-black brand-gradient-text tracking-tighter">₹0</span>
+                                </div>
+                            </div>
+
+                            <button onclick="proceedToWhatsApp()" class="w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all mb-6">Proceed to WhatsApp Checkout</button>
+                            
+                            <div class="bg-gray-50 p-4 rounded-2xl text-center">
+                                <p class="text-[10px] text-gray-500 font-medium leading-relaxed italic">A real clinical technician will review your order and confirm your booking. Please be patient. If you don't receive a call within 1 hour, <a href="tel:+919380116362" class="text-brand-blue font-bold hover:underline">click here to contact us directly</a>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="privacy-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
+            <div class="max-w-3xl mx-auto text-left">
+                <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Privacy Policy.</h1>
+                <div class="space-y-6 text-slate-900 font-medium leading-relaxed">
+                    <p>At Winpath Diagnostics, we recognize that health information is the most sensitive form of personal data. As an ISO 15189:2022 certified laboratory, we are committed to data integrity and patient confidentiality.</p>
+                    <h3 class="text-lg font-black mt-8">1.1 Data Collection & Usage</h3>
+                    <p>We collect essential information to facilitate diagnostic processing, including Identity Details, Contact Information, and Clinical History. This data is exclusively used for medical reporting.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="terms-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6 text-left">
+            <div class="max-w-3xl mx-auto text-left">
+                <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Terms of Use.</h1>
+                <div class="space-y-6 text-slate-900 font-medium leading-relaxed">
+                    <p>By accessing the Winpath Diagnostics website and services, you agree to comply with our clinical protocols.</p>
+                    <h3 class="text-lg font-black mt-8">2.1 Clinical Disclaimer</h3>
+                    <p>Information provided here is for diagnostic assistance. Full interpretation should be performed by a qualified medical professional.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="about-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
+            <div class="max-w-4xl mx-auto text-left">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-blue font-bold text-[10px] uppercase tracking-widest mb-8">The Winpath Story</div>
+                <h1 class="text-4xl sm:text-6xl font-black text-gray-900 tracking-tighter uppercase mb-12">Clinical Integrity. <br><span class="brand-gradient-text">Personal Care.</span></h1>
+                
+                <div class="prose prose-lg text-gray-600 space-y-8 font-medium leading-relaxed text-left">
+                    <p>Winpath Diagnostics was founded on a singular premise: <span class="font-black text-gray-900 text-xl tracking-tight leading-tight">that every sample represents a person awaiting an answer.</span> I started this lab because I believe healthcare deserves a personal touch that corporate diagnostics often lacks.</p>
+                    
+                    <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 my-12 text-left">
+                        <h2 class="text-2xl font-black text-gray-900 mb-6 tracking-tight">Meet Your Pathologist</h2>
+                        <div class="flex flex-col sm:flex-row gap-8 items-start">
+                            <div class="flex-1">
+                                <h3 class="text-brand-blue font-black text-lg mb-1">Dr. Joswin Rakesh Dsa</h3>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">MBBS (KSHEMA), MD Pathology (KMC Manipal)</p>
+                                <p class="text-sm leading-relaxed text-gray-500 mb-6">As a <strong>first-generation doctor</strong>, my journey into medicine was fueled by a desire to make a difference. After pursuing my MBBS from <strong>KS Hegde Medical Academy (KSHEMA), Mangalore</strong> and completing my postgraduation in Pathology from the prestigious <strong>Kasturba Medical College (KMC), Manipal</strong>, I saw the need for a lab that prioritizes accuracy over volume.</p>
+                                <div class="flex gap-4">
+                                    <div class="px-4 py-2 bg-white rounded-xl border border-gray-100 text-[10px] font-black uppercase tracking-widest text-brand-cyan">Self-Funded</div>
+                                    <div class="px-4 py-2 bg-white rounded-xl border border-gray-100 text-[10px] font-black uppercase tracking-widest text-brand-blue">Independent</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p>Unlike many modern facilities, Winpath is <strong>completely self-funded and doctor-owned</strong>. We aren't answerable to corporate boards or investors—we are answerable only to you. This independence allows us to maintain the rigorous <strong>ISO 15189:2022 standards</strong> without compromise.</p>
+                    
+                    <p>When you get a report from Winpath, you aren't just getting data. You are getting a document verified by a specialist who is personally invested in your health journey.</p>
+                </div>
+
+                <div class="mt-24 mb-10">
+                    <div class="inline-flex items-center gap-3 px-4 py-1 bg-brand-green/10 text-brand-green rounded-full text-[9px] font-black uppercase tracking-[0.3em] mb-6">Our Future</div>
+                    <h2 class="text-3xl sm:text-5xl font-black text-gray-900 mb-4 tracking-tighter">Strategic <span class="brand-gradient-text italic">Roadmap.</span></h2>
+                    <p class="text-gray-500 text-sm mb-12 max-w-2xl leading-relaxed">The milestones that define our commitment to precision and the goals we are building towards for our patients.</p>
+                    
+                    <div id="roadmap-container" class="relative border-l-2 border-brand-cyan/20 ml-3 sm:ml-5 space-y-8 pb-4">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="contact-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-16 text-center">Contact <span class="brand-gradient-text italic">Us.</span></h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    <div class="bg-white rounded-[3rem] p-10 shadow-xl border border-gray-100">
+                        <div class="w-16 h-16 bg-green-50 text-brand-green rounded-2xl flex items-center justify-center mb-8"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 0 5.495 0 12.05c0 2.096.547 4.142 1.588 5.945L0 24l6.105-1.604a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></div>
+                        <h3 class="text-xl font-black mb-2 text-gray-900 text-left uppercase tracking-tight">WhatsApp Us</h3>
+                        <p class="text-sm text-gray-500 mb-8 leading-relaxed italic text-left">Direct clinical support. Our fastest booking route.</p>
+                        <a href="https://wa.me/919380116362" target="_blank" rel="noopener noreferrer" class="block w-full bg-brand-green text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] text-center shadow-lg active:scale-95 transition-all">Book on WhatsApp</a>
+                    </div>
+                    <div class="bg-white rounded-[3rem] p-10 shadow-xl border border-gray-100 flex flex-col justify-between">
+                        <div class="space-y-8">
+                            <div class="text-left"><span class="text-[9px] font-black uppercase text-brand-blue block mb-1">Support Call</span><a href="tel:+919380116362" class="text-xl font-bold text-gray-900 tracking-tight">+91 93801 16362</a></div>
+                            <div class="text-left"><span class="text-[9px] font-black uppercase text-brand-blue block mb-1">Email Support</span><a href="mailto:winpathdiagnostics@gmail.com" class="text-lg font-bold text-gray-900 break-all tracking-tight">winpathdiagnostics@gmail.com</a></div>
+                        </div>
+                        <div class="pt-6 border-t border-gray-50 mt-10"><p class="text-[11px] text-gray-400 font-medium italic text-left">Mon — Sat: 7 AM - 8 PM<br>Sun: 7 AM - 1 PM</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-brand-dark py-20 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 mb-20 text-left">
+                <div>
+                    <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/WINPATH-LOGO-OG2.png" alt="Winpath" class="h-10 mb-8 grayscale brightness-200">
+                    <p class="text-gray-500 text-sm font-medium leading-relaxed max-w-sm italic">Bengaluru's premier pathologist-led diagnostic center. Clinical excellence since 2012.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-8 font-bold text-gray-500 text-xs tracking-widest uppercase">
+                    <ul class="space-y-4">
+                        <li><a href="javascript:void(0)" onclick="switchView('home')" class="hover:text-brand-cyan transition-colors">Home</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchView('about')" class="hover:text-brand-cyan transition-colors">About Us</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchView('packages-page')" class="hover:text-brand-cyan transition-colors">Test Menu</a></li>
+                    </ul>
+                    <ul class="space-y-4">
+                        <li><a href="https://wa.me/919380116362" target="_blank" rel="noopener noreferrer" class="text-brand-green hover:text-white transition-colors">WhatsApp</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchView('privacy')" class="hover:text-brand-cyan transition-colors">Privacy</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchView('terms')" class="hover:text-brand-cyan transition-colors">Terms</a></li>
+                    </ul>
+                </div>
+                <div class="bg-gray-900/50 p-8 rounded-[2.5rem] border border-gray-800">
+                    <h4 class="text-brand-cyan text-[9px] font-black uppercase tracking-[0.3em] mb-4">Accreditation</h4>
+                    <p class="text-gray-400 text-[10px] leading-relaxed mb-6 font-medium italic italic">Strict ISO 15189:2022 protocols for precision in clinical reporting.</p>
+                    <div class="flex gap-2">
+                        <div class="px-3 py-1 bg-brand-blue/10 border border-brand-blue/20 rounded text-[8px] font-black text-brand-blue uppercase tracking-widest">ISO 15189</div>
+                        <div class="px-3 py-1 bg-brand-green/10 border border-brand-green/20 rounded text-[8px] font-black text-brand-green uppercase tracking-widest">Verified</div>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-12 border-t border-gray-800/50 flex flex-col md:flex-row justify-between items-center gap-6">
+                <p class="text-gray-600 text-[9px] font-black uppercase tracking-[0.2em]">© 2026 Winpath Diagnostics. Bengaluru, KA.</p>
+                <div class="flex items-center gap-2 font-black text-[9px] text-gray-600 uppercase tracking-widest"><span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span> Network Operational</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="data.js"></script>
+
+    <script id="winpath-logic">
+        /// --- FINAL BILL CONFIGURATION (Editable Billing Logic) --- ///
+        const BILLING_CONFIG = {
+            homeCollectionFee: 200,   // ₹ Flat fee for home visit
+            convenienceCharge: 50,    // ₹ Digital handling fee
+            discountAmount: 0         // ₹ Flat discount (set to 0 for no discount)
+        };
+        /// --------------------------------------------------------- ///
+
+        // State Management
+        let rateCard = [];
+        let navHistory = ['home'];
+        let shoppingCart = [];
+        let userLocationLink = "";
+
+        // Security Utility: Sanitize text to prevent DOM-based XSS
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>'"]/g, match => {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
+            });
+        }
+
+        // View Management
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const menuIcon = document.getElementById('menu-icon');
+            const closeIcon = document.getElementById('close-icon');
+            const isOpen = !menu.classList.contains('hidden');
+            menu.classList.toggle('hidden', isOpen);
+            menuIcon.classList.toggle('hidden', !isOpen);
+            closeIcon.classList.toggle('hidden', isOpen);
+        }
+
+        function switchView(viewId, pushToHistory = true) {
+            const views = ['home-view', 'packages-page-view', 'contact-view', 'about-view', 'test-detail-view', 'privacy-view', 'terms-view', 'cart-view'];
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('view-hidden');
+            });
+            
+            const target = document.getElementById(viewId + '-view');
+            if (target) {
+                target.classList.remove('view-hidden');
+                if (pushToHistory) navHistory.push(viewId);
+                window.scrollTo(0, 0);
+            }
+
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu && !mobileMenu.classList.contains('hidden')) toggleMobileMenu();
+            
+            // Re-render cart if opening cart view
+            if (viewId === 'cart') renderCartView();
+        }
+
+        function goBack() {
+            if (navHistory.length > 1) {
+                navHistory.pop();
+                const prev = navHistory.pop();
+                switchView(prev, true);
+            } else { switchView('home'); }
+        }
+
+        // Cart Operations
+        function addToCart(testId) {
+            const test = rateCard.find(t => t.id === testId);
+            if (test && !shoppingCart.some(item => item.id === testId)) {
+                shoppingCart.push(test);
+                updateCartBadge();
+                showToast();
+            }
+        }
+
+        function removeFromCart(testId) {
+            shoppingCart = shoppingCart.filter(item => item.id !== testId);
+            updateCartBadge();
+            renderCartView(); // re-render the cart UI to reflect removal
+        }
+
+        function updateCartBadge() {
+            const count = shoppingCart.length;
+            document.getElementById('cart-badge').innerText = count;
+            document.getElementById('mobile-cart-count').innerText = count;
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+        }
+
+        // Cart Checkout & Billing UI
+        function renderCartView() {
+            const emptyMsg = document.getElementById('empty-cart-msg');
+            const cartContent = document.getElementById('cart-content');
+            const itemList = document.getElementById('cart-items-list');
+
+            if (shoppingCart.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                cartContent.classList.add('hidden');
+            } else {
+                emptyMsg.classList.add('hidden');
+                cartContent.classList.remove('hidden');
+
+                // Render Items
+                itemList.innerHTML = '';
+                let subtotal = 0;
+
+                shoppingCart.forEach(item => {
+                    const priceNum = parseInt(item.price.replace(/,/g, ''));
+                    subtotal += priceNum;
+                    
+                    itemList.innerHTML += `
+                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                            <div>
+                                <h4 class="font-black text-sm text-gray-900">${escapeHTML(item.name)}</h4>
+                                <span class="text-xs font-bold text-brand-blue uppercase tracking-widest">₹${escapeHTML(item.price)}</span>
+                            </div>
+                            <button onclick="removeFromCart('${escapeHTML(item.id)}')" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    `;
+                });
+
+                // Update Final Bill logic
+                const total = subtotal + BILLING_CONFIG.homeCollectionFee + BILLING_CONFIG.convenienceCharge - BILLING_CONFIG.discountAmount;
+                
+                document.getElementById('bill-subtotal').innerText = `₹${subtotal.toLocaleString()}`;
+                document.getElementById('bill-collection').innerText = `₹${BILLING_CONFIG.homeCollectionFee}`;
+                document.getElementById('bill-convenience').innerText = `₹${BILLING_CONFIG.convenienceCharge}`;
+                document.getElementById('bill-discount').innerText = `-₹${BILLING_CONFIG.discountAmount}`;
+                document.getElementById('bill-total').innerText = `₹${Math.max(0, total).toLocaleString()}`;
+            }
+        }
+
+        // HTML5 Geolocation function
+        function locateUser() {
+            const statusEl = document.getElementById('location-status');
+            statusEl.innerText = "Locating...";
+            statusEl.className = "text-xs font-semibold text-brand-blue italic";
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    userLocationLink = `https://maps.google.com/?q=${lat},${lng}`;
+                    
+                    statusEl.innerText = "GPS Location Pinned Successfully! ✓";
+                    statusEl.className = "text-xs font-black uppercase tracking-widest text-brand-green mt-1";
+                }, error => {
+                    statusEl.innerText = "GPS Access Denied. Please type your address manually below.";
+                    statusEl.className = "text-xs font-bold text-red-500 italic mt-1";
+                });
+            } else {
+                statusEl.innerText = "Geolocation not supported. Please type address.";
+            }
+        }
+
+        // Final Secure WhatsApp Handoff
+        function proceedToWhatsApp() {
+            // 1. Gather Form Data
+            const name = document.getElementById('checkout-name').value.trim();
+            const mobile = document.getElementById('checkout-mobile').value.trim();
+            const email = document.getElementById('checkout-email').value.trim();
+            const address = document.getElementById('checkout-address').value.trim();
+
+            // 2. Validation
+            if (!name || !mobile || (!address && !userLocationLink)) {
+                alert("Please fill out your Name, Mobile Number, and provide an Address/Location.");
+                return;
+            }
+
+            // 3. Construct Message
+            let message = `*NEW HOME COLLECTION BOOKING*\n\n`;
+            message += `*Patient Details:*\n`;
+            message += `Name: ${name}\n`;
+            message += `Mobile: ${mobile}\n`;
+            if (email) message += `Email: ${email}\n`;
+            if (userLocationLink) message += `GPS Link: ${userLocationLink}\n`;
+            if (address) message += `Address Note: ${address}\n\n`;
+
+            message += `*Selected Tests:*\n`;
+            let subtotal = 0;
+            shoppingCart.forEach((item, index) => {
+                message += `${index + 1}. ${item.name} (₹${item.price})\n`;
+                subtotal += parseInt(item.price.replace(/,/g, ''));
+            });
+
+            const total = subtotal + BILLING_CONFIG.homeCollectionFee + BILLING_CONFIG.convenienceCharge - BILLING_CONFIG.discountAmount;
+
+            message += `\n*Billing Summary:*\n`;
+            message += `Subtotal: ₹${subtotal.toLocaleString()}\n`;
+            message += `Home Collection: ₹${BILLING_CONFIG.homeCollectionFee}\n`;
+            message += `Convenience Fee: ₹${BILLING_CONFIG.convenienceCharge}\n`;
+            if (BILLING_CONFIG.discountAmount > 0) message += `Discount: -₹${BILLING_CONFIG.discountAmount}\n`;
+            message += `*Total Amount: ₹${Math.max(0, total).toLocaleString()}*`;
+
+            // 4. Send securely
+            const encodedMessage = encodeURIComponent(message);
+            const waUrl = `https://wa.me/919380116362?text=${encodedMessage}`;
+            
+            // Empty the cart
+            shoppingCart = [];
+            updateCartBadge();
+            switchView('home');
+            
+            window.open(waUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        // Filtering and Catalog Rendering
+        function filterByCategory(type, value) {
+            switchView('packages-page');
+            document.getElementById('menu-title').innerHTML = `${escapeHTML(value)} <span class="brand-gradient-text italic">Tests.</span>`;
+            document.getElementById('menu-subtitle').innerText = `Browsing specialized screenings for ${escapeHTML(value)}`;
+            document.getElementById('clear-btn').classList.remove('hidden');
+            
+            const filtered = rateCard.filter(t => t.category && t.category[type] === value);
+            renderTests(filtered);
+            clearSearchInput(false); 
+        }
+
+        let searchTimeout;
+        function handleSearchInput() {
+            const input = document.getElementById('test-search');
+            const clearBtn = document.getElementById('search-clear-icon');
+            if (input.value.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => { filterTests(); }, 300);
+        }
+
+        function clearSearchInput(executeFilter = true) {
+            const input = document.getElementById('test-search');
+            input.value = '';
+            document.getElementById('search-clear-icon').classList.add('hidden');
+            if (executeFilter) filterTests();
+        }
+
+        function filterTests() {
+            const rawQuery = document.getElementById('test-search').value.toLowerCase();
+            const query = rawQuery.replace(/[^a-z0-9\s-]/g, '');
+            if(query === "") { renderTests(rateCard.slice(0, 18)); } 
+            else { renderTests(rateCard.filter(t => t.name.toLowerCase().includes(query) || (t.params && t.params.toLowerCase().includes(query)))); }
+        }
+
+        function showTestDetail(testId) {
+            const test = rateCard.find(t => t.id === testId);
+            if (!test) return;
+            const content = document.getElementById('detail-content');
+
+            const safeName = escapeHTML(test.name);
+            const safePrice = escapeHTML(test.price);
+            const safeImportance = escapeHTML(test.importance);
+            const safeParams = escapeHTML(test.params);
+
+            let bodyHtml = "";
+            if (test.isPackage) {
+                bodyHtml = `
+                    <div class="space-y-12">
+                        <div>
+                            <h3 class="text-[10px] font-black uppercase text-brand-blue tracking-[0.2em] mb-4 underline underline-offset-4 decoration-brand-cyan">Clinical Importance</h3>
+                            <p class="text-xl text-gray-600 font-medium leading-relaxed">${safeImportance}</p>
+                        </div>
+                        <div class="bg-gray-50 p-10 rounded-[3rem] border border-gray-100">
+                            <h3 class="text-[10px] font-black uppercase text-brand-blue tracking-[0.2em] mb-6">Tested Parameters</h3>
+                            <p class="text-lg font-bold text-gray-900 italic leading-relaxed tracking-tight underline decoration-brand-cyan/20 underline-offset-8">${safeParams}</p>
+                        </div>
+                    </div>`;
+            } else {
+                bodyHtml = `<div class="bg-gray-50 p-10 rounded-[3rem] border border-gray-100"><p class="text-lg text-gray-500 font-medium leading-relaxed">This standalone investigation is processed using ISO 15189:2022 standardized protocols. Results will be delivered within 24 hours.</p></div>`;
+            }
+
+            content.innerHTML = `
+                <div class="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <h2 class="text-4xl sm:text-6xl font-black text-gray-900 mb-8 tracking-tighter uppercase leading-tight">${safeName}</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <div class="lg:col-span-2">${bodyHtml}</div>
+                        <div class="hidden lg:block">
+                            <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 sticky top-32">
+                                <div class="text-[9px] font-black text-gray-400 uppercase mb-2">Service Fee</div>
+                                <div class="text-5xl font-black brand-gradient-text tracking-tighter mb-8">₹${safePrice}</div>
+                                <button onclick="addToCart('${escapeHTML(test.id)}')" class="block w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-xl hover:scale-[1.02] active:scale-95 transition-all">Add to Cart</button>
+                                <p class="text-[8px] text-center text-gray-400 mt-6 font-bold uppercase tracking-widest italic">Digital reports in 24 hours</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-200 p-6 pb-8 z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[2rem] flex justify-between items-center animate-in slide-in-from-bottom-full">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Service Fee</p>
+                        <div class="text-3xl font-black brand-gradient-text tracking-tighter leading-none">₹${safePrice}</div>
+                    </div>
+                    <button onclick="addToCart('${escapeHTML(test.id)}')" class="px-8 py-4 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Add to Cart</button>
+                </div>
+            `;
+            switchView('test-detail');
+        }
+
+        function renderTests(tests) {
+            const container = document.getElementById('test-results');
+            container.innerHTML = tests.length > 0 ? '' : '<p class="col-span-full py-20 text-center font-bold text-gray-400">No clinical parameters matched your search</p>';
+            const sorted = [...tests].sort((a,b) => (b.isPackage ? 1 : 0) - (a.isPackage ? 1 : 0));
+            sorted.forEach(test => {
+                const card = document.createElement('div');
+                const isPkg = test.isPackage;
+                const safeName = escapeHTML(test.name);
+                const safePrice = escapeHTML(test.price);
+                const safeParams = escapeHTML(test.params);
+
+                card.className = `test-card p-8 rounded-[2.5rem] shadow-sm flex flex-col h-full ${isPkg ? 'bg-brand-blue/5 border-brand-blue/20' : 'bg-white'}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-6 cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')">
+                        <h4 class="text-lg font-black text-gray-900 leading-tight text-left hover:text-brand-blue transition-colors">${safeName}</h4>
+                        <span class="text-xl font-black brand-gradient-text ml-4 shrink-0">₹${safePrice}</span>
+                    </div>
+                    ${isPkg ? `<p class="text-[10px] text-brand-blue font-black uppercase tracking-widest mb-4 text-left">Health Package</p><div class="bg-gray-50/80 p-5 rounded-2xl flex-grow mb-6 text-left cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')"><span class="text-[8px] font-black text-brand-blue uppercase block mb-2 opacity-50">Parameters</span><p class="text-[10px] text-gray-600 font-semibold italic line-clamp-2">${safeParams}</p></div>` : '<div class="flex-grow cursor-pointer" onclick="showTestDetail(\'' + escapeHTML(test.id) + '\')"></div>'}
+                    <button onclick="addToCart('${escapeHTML(test.id)}')" class="w-full py-3 mt-4 bg-brand-cyan/10 text-brand-blue hover:bg-brand-blue hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors">Add to Cart</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function populateFeaturedPackages() {
+            const container = document.getElementById('featured-packages-grid');
+            if(!container) return;
+            container.innerHTML = "";
+            
+            // Map the specific IDs you had hardcoded to your array data.
+            const featuredIds = ['p-3', 'p-4', 'p-5', 'p-2']; 
+            
+            featuredIds.forEach(id => {
+                const pkg = rateCard.find(t => t.id === id);
+                if(pkg) {
+                    const card = document.createElement('div');
+                    card.className = `bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-xl transition-all ${id==='p-5' ? 'transform scale-[1.03] z-10 border-2 border-brand-cyan/20 shadow-2xl relative' : ''}`;
+                    
+                    let badgeHtml = id === 'p-5' ? `<div class="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 brand-gradient-bg rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-lg">Most Popular</div>` : '';
+                    
+                    card.innerHTML = `
+                        ${badgeHtml}
+                        <div class="cursor-pointer" onclick="showTestDetail('${escapeHTML(pkg.id)}')">
+                            <h3 class="text-2xl font-black text-gray-900 mb-2 hover:text-brand-blue transition-colors">${escapeHTML(pkg.name)}</h3>
+                            <p class="text-[11px] text-gray-400 font-medium leading-relaxed mb-8 italic line-clamp-2">${escapeHTML(pkg.importance)}</p>
+                            <div class="text-3xl font-black text-brand-blue mb-8">₹${escapeHTML(pkg.price)}</div>
+                        </div>
+                        <div class="mt-auto">
+                            <button onclick="addToCart('${escapeHTML(pkg.id)}')" class="w-full py-4 ${id==='p-5' ? 'brand-gradient-bg text-white shadow-xl hover:scale-[1.02]' : 'bg-gray-50 text-brand-blue hover:bg-gray-100'} text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all">Add to Cart</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        function renderRoadmap() {
+            const container = document.getElementById('roadmap-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (typeof roadmapGoals !== 'undefined') {
+                roadmapGoals.forEach((goal) => {
+                    const isCompleted = goal.status === 'completed';
+                    const dotStyle = isCompleted ? 'brand-gradient-bg border-white' : 'bg-white border-brand-cyan/40';
+                    const textStyle = isCompleted ? 'text-gray-900' : 'text-gray-400';
+                    
+                    const safeYear = escapeHTML(goal.year);
+                    const safeTitle = escapeHTML(goal.title);
+                    const safeDesc = escapeHTML(goal.desc);
+
+                    container.innerHTML += `
+                        <div class="relative pl-8 sm:pl-12 group cursor-default">
+                            <div class="absolute left-[-9px] top-2 w-4 h-4 rounded-full border-2 ${dotStyle} group-hover:scale-150 transition-transform duration-300 shadow-sm z-10"></div>
+                            <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 group-hover:border-brand-cyan/40">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-brand-cyan mb-2 block">${safeYear} ${isCompleted ? '' : '(Goal)'}</span>
+                                <h4 class="text-xl font-black ${textStyle} mb-2 tracking-tight group-hover:text-brand-blue transition-colors">${safeTitle}</h4>
+                                <p class="text-sm text-gray-500 leading-relaxed">${safeDesc}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        window.onload = () => { 
+            if (typeof healthPackages !== 'undefined' && typeof investigations !== 'undefined') {
+                rateCard = [...healthPackages, ...investigations];
+            }
+            filterTests(); 
+            renderRoadmap(); 
+            populateFeaturedPackages();
+        };
+    </script>
+</body>
+</html>

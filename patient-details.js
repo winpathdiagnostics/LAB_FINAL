@@ -4,13 +4,13 @@
 
 // IMPORTANT: Replace the URL below with your actual Google Apps Script Web App URL
 // Example: "https://script.google.com/macros/s/AKfycb.../exec"
-const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx7JaqN9xauV4zsDXhToe37ftMZFWE8sje5jwhCGV3S-RGgrKeJRCfBPERQGfBqm0Q8DA/exec";
+const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMuMNnEdNmRgKzfhaLtO8sefFWPYc6LSCSNZkWYTNCgpOrUdGfcsTeXUMzxu2zVE_dxQ/exec";
 
 /**
  * Silently submits checkout data to a Google Sheet in the background.
  */
 async function recordPatientDetails(customerData) {
-    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbx7JaqN9xauV4zsDXhToe37ftMZFWE8sje5jwhCGV3S-RGgrKeJRCfBPERQGfBqm0Q8DA/exec")) {
+    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbwMuMNnEdNmRgKzfhaLtO8sefFWPYc6LSCSNZkWYTNCgpOrUdGfcsTeXUMzxu2zVE_dxQ/exec")) {
         console.warn("Google Sheets URL not configured. Skipping background tracking.");
         return;
     }

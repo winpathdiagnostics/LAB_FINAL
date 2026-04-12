@@ -678,10 +678,17 @@
 
         function locateUser() {
             const statusEl = document.getElementById('location-status');
-            statusEl.innerText = "Locating...";
+            statusEl.innerText = "Locating (Please allow permissions)...";
             statusEl.className = "text-xs font-semibold text-brand-blue italic";
 
             if (navigator.geolocation) {
+                // Added robust options for mobile GPS capture
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000, // Stop trying after 10 seconds
+                    maximumAge: 0
+                };
+
                 navigator.geolocation.getCurrentPosition(position => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
@@ -690,11 +697,20 @@
                     statusEl.innerText = "GPS Location Pinned Successfully! ✓";
                     statusEl.className = "text-xs font-black uppercase tracking-widest text-brand-green mt-1";
                 }, error => {
-                    statusEl.innerText = "GPS Access Denied. Please type your address manually below.";
+                    console.error("GPS Error:", error);
+                    let errorMsg = "GPS Error. Please type your address manually.";
+                    
+                    // Specific error handling so the user isn't stuck waiting
+                    if (error.code === 1) errorMsg = "GPS Access Denied. Please type your address manually.";
+                    else if (error.code === 2) errorMsg = "GPS Signal Unavailable. Please type your address.";
+                    else if (error.code === 3) errorMsg = "Location Request Timed Out. Please type your address.";
+                    
+                    statusEl.innerText = errorMsg;
                     statusEl.className = "text-xs font-bold text-red-500 italic mt-1";
-                });
+                }, options);
             } else {
-                statusEl.innerText = "Geolocation not supported. Please type address.";
+                statusEl.innerText = "Geolocation not supported by this browser. Please type address.";
+                statusEl.className = "text-xs font-bold text-red-500 italic mt-1";
             }
         }
 

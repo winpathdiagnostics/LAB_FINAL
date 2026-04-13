@@ -32,6 +32,8 @@ async function recordPatientDetails(customerData) {
         formData.append("entry.636938048", customerData.gpsLink);     // GPS Link
         formData.append("entry.1007532172", customerData.tests);      // Tests Booked
         formData.append("entry.1433709427", customerData.totalAmount); // Total Amount
+        formData.append("entry.1096714223", customerData.promoCode);   // Promo Code
+
 
         // Submit the data silently in the background
         await fetch(GOOGLE_FORM_URL, {

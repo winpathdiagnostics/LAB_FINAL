@@ -403,8 +403,8 @@ async function proceedToWhatsApp() {
     checkoutBtn.innerText = "Processing Details...";
     checkoutBtn.disabled = true;
 
-    // 6. Google Sheets Dispatch
-    // Bundle the data and hand it off to patient-details.js to send to the Form
+    // --- UPDATED Google Sheets Dispatch ---
+    // We now include the appliedPromoCode in the data bundle
     const customerData = {
         name: name,
         age: age,
@@ -414,11 +414,12 @@ async function proceedToWhatsApp() {
         address: address || "N/A",
         gpsLink: userLocationLink || "N/A",
         tests: shoppingCart.map(item => item.name).join(", "),
-        totalAmount: Math.max(0, Math.round(total))
+        totalAmount: Math.max(0, Math.round(total)),
+        promoCode: appliedPromoCode || "None" 
     };
 
     if (typeof recordPatientDetails === 'function') {
-        await recordPatientDetails(customerData); // Await the background fetch request
+        await recordPatientDetails(customerData);
     }
     
     checkoutBtn.innerText = originalBtnText;

@@ -170,6 +170,21 @@ function applyPromoCode() {
 }
 
 /**
+ * Removes the currently applied promo code and resets the cart math.
+ */
+function removePromoCode() {
+    appliedDiscountPercentage = 0;
+    appliedPromoCode = "";
+    
+    const input = document.getElementById('promo-code-input');
+    if (input) {
+        input.value = "";
+    }
+    
+    renderCartView();
+}
+
+/**
  * Dynamically builds the HTML for the Cart View and performs all billing math.
  */
 function renderCartView() {
@@ -230,21 +245,42 @@ function renderCartView() {
         const discountEl = document.getElementById('bill-discount');
         const promoLabel = document.getElementById('active-promo-label');
         
+        // --- NEW: UI Elements for Promo Toggle ---
+        const promoInput = document.getElementById('promo-code-input');
+        const applyBtn = document.getElementById('promo-apply-btn');
+        const removeBtn = document.getElementById('promo-remove-btn');
+        
         // If there is an active discount, show it in green. Otherwise, show ₹0.
         if (appliedDiscountPercentage > 0 && subtotal > 0) {
             discountEl.innerText = `-₹${Math.round(discountVal).toLocaleString()}`;
             if(promoLabel) promoLabel.innerText = `(${appliedPromoCode})`;
             discountEl.classList.add('text-brand-green');
+            
+            // Lock input, turn it green, and show "Cancel" button
+            if (applyBtn) applyBtn.classList.add('hidden');
+            if (removeBtn) removeBtn.classList.remove('hidden');
+            if (promoInput) {
+                promoInput.value = appliedPromoCode;
+                promoInput.disabled = true;
+                promoInput.classList.add('bg-brand-green/10', 'text-brand-green', 'border-brand-green/30');
+            }
         } else {
             discountEl.innerText = `₹0`;
             if(promoLabel) promoLabel.innerText = "";
             discountEl.classList.remove('text-brand-green');
+            
+            // Unlock input, remove green styling, and show "Apply" button
+            if (applyBtn) applyBtn.classList.remove('hidden');
+            if (removeBtn) removeBtn.classList.add('hidden');
+            if (promoInput) {
+                promoInput.disabled = false;
+                promoInput.classList.remove('bg-brand-green/10', 'text-brand-green', 'border-brand-green/30');
+            }
         }
 
         // Final total (Math.max ensures the total never goes below 0)
         document.getElementById('bill-total').innerText = `₹${Math.max(0, Math.round(total)).toLocaleString()}`;
     }
-}
 
 // =====================================================================
 // CHECKOUT & GPS INTEGRATION

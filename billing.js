@@ -1,11 +1,19 @@
 // =====================================================================
-// FINAL BILL CONFIGURATION (Editable Billing Logic)
+// BILLING & FEE CONFIGURATION
 // =====================================================================
-// This file controls the extra charges and discounts applied at checkout.
-// You can update these numbers at any time to instantly reflect on the live site.
+// Adjust these values anytime. The website will automatically update.
 
 const BILLING_CONFIG = {
-    homeCollectionFee: 150,   // ₹ Flat fee added for the home visit service
-    convenienceCharge: 50,    // ₹ Digital handling or platform fee
-    discountPercentage: 10     // % Discount to subtract (e.g., 10 for 10% off)
+    // Standard Fees (in ₹)
+    homeCollectionFee: 110,  // Charge for visiting the patient's home
+    bookingFee: 30,          // Fee for processing the booking
+    platformFee: 10,         // Fee for platform maintenance
+    
+    // Discount Codes Dictionary
+    // Format: "CODENAME": percentage_number
+    validDiscountCodes: {
+        "WINPATH20": 20,     // 20% off
+        "HEALTH50": 50,      // 50% off
+        "DRDSA10": 10        // 10% off
+    }
 };

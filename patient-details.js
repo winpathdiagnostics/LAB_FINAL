@@ -9,7 +9,7 @@
  */
 
 // Your specific Form Response URL
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe-eX7YISxrHAgkg9_9O-f8j_tzT02k5C9GQzDuME9Rcm94kA/viewform?usp=dialog";
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe-eX7YISxrHAgkg9_9O-f8j_tzT02k5C9GQzDuME9Rcm94kA/formResponse";
 
 /**
  * Maps website fields to Google Sheets via your Google Form bridge.
@@ -43,7 +43,7 @@ async function recordPatientDetails(customerData) {
             body: formData.toString()
         });
         
-        console.log("Data successfully logged to Google Sheet.");
+        console.log("Data successfully logged to Google Sheet via Google Form.");
     } catch (error) {
         console.error("Data capture failed:", error);
     }

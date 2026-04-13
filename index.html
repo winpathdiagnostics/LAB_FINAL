@@ -1,18 +1,34 @@
 <!DOCTYPE html>
+<!-- The 'scroll-smooth' class enables smooth scrolling for anchor links -->
 <html lang="en" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
+    <!-- Ensures the website is responsive and scales correctly on mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com data:;">
+    
+    <!-- 
+      CONTENT SECURITY POLICY (CSP): 
+      This is a vital security feature. It dictates exactly which external resources your website is allowed to load or talk to.
+      Crucially, we added 'https://docs.google.com' to the 'connect-src' directive here so your website is permitted 
+      to send checkout data silently to your Google Form.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com data:;">    
     
     <title>Winpath Diagnostics | Precision Pathology</title>
+    
+    <!-- Loading the 'Outfit' font family from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Loading Tailwind CSS directly via CDN for rapid styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration: Customizing the framework to match Winpath's branding -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    // Defining custom brand colors so they can be used like 'bg-brand-blue' or 'text-brand-cyan'
                     colors: {
                         brand: {
                             blue: '#2C5EB4',
@@ -21,7 +37,9 @@
                             dark: '#0B131D',
                         }
                     },
+                    // Setting the default sans-serif font to 'Outfit'
                     fontFamily: { sans: ['Outfit', 'Inter', 'sans-serif'] },
+                    // Creating custom CSS animations for the floating buttons and background effects
                     animation: {
                         'float': 'float 3s ease-in-out infinite',
                         'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -37,13 +55,17 @@
         }
     </script>
 
+    <!-- Custom standard CSS for things Tailwind doesn't handle natively -->
     <style>
+        /* Custom styling for the browser scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #27BBD4; border-radius: 10px; }
         
+        /* Base body styles and removing the blue tap highlight on mobile devices */
         body { font-family: 'Outfit', sans-serif; background-color: #ffffff; -webkit-tap-highlight-color: transparent; }
         
+        /* Utility class to apply a 3-color gradient specifically to text */
         .brand-gradient-text {
             background: linear-gradient(to right, #2C5EB4, #27BBD4, #5DCE9E);
             -webkit-background-clip: text;
@@ -51,10 +73,12 @@
             background-clip: text;
         }
 
+        /* Utility class to apply a 3-color gradient to backgrounds (buttons, borders) */
         .brand-gradient-bg {
             background: linear-gradient(to right, #2C5EB4, #27BBD4, #5DCE9E);
         }
 
+        /* MEGA MENU STYLES: Hidden by default, shifted slightly down */
         .mega-menu {
             opacity: 0;
             visibility: hidden;
@@ -62,24 +86,29 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* MEGA MENU STYLES: When hovering over the parent 'group', make the menu visible and slide it up */
         .group:hover .mega-menu {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
 
+        /* Hover effects for individual test cards in the catalog */
         .test-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; cursor: pointer; }
         .test-card:hover { border-color: #27BBD4; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 
+        /* CRITICAL SPA CLASS: This hides sections of the website. JavaScript adds/removes this to "change pages" */
         .view-hidden { display: none; }
         
+        /* Hover animation for the 8 specialty boxes on the homepage */
         .specialty-pill { transition: all 0.4s ease; }
         .specialty-pill:hover { transform: translateY(-5px); background: white; box-shadow: 0 15px 30px -10px rgba(44, 94, 180, 0.15); }
         
-        /* Toast Notification */
+        /* Toast Notification: Hidden below the screen by default, slides up when the 'show' class is added */
         #toast { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(100px); opacity: 0; }
         #toast.show { transform: translateY(0); opacity: 1; }
         
+        /* Global WhatsApp button positioning and floating animation */
         .floating-wa { position: fixed; bottom: 24px; right: 24px; z-index: 100; animation: float 3s ease-in-out infinite; }
         .back-btn { transition: transform 0.2s ease; }
         .back-btn:hover { transform: translateX(-5px); }
@@ -88,29 +117,29 @@
 
 <body class="text-gray-800 antialiased selection:bg-brand-cyan selection:text-white overflow-x-hidden">
 
-    <!-- Toast Notification -->
+    <!-- TOAST NOTIFICATION: Popped up by main.js when a user clicks "Add to Cart" -->
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-brand-dark text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 pointer-events-none">
         <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
         <span class="text-sm font-bold tracking-wide">Added to Cart</span>
     </div>
 
-    <!-- Floating WhatsApp CTA (Hidden inside cart/detail views logic) -->
+    <!-- FLOATING WHATSAPP CTA: Always visible in the bottom right corner for quick access -->
     <a id="global-wa-btn" href="https://wa.me/919380116362?text=Hello%20Winpath%20Team!%20I'd%20like%20to%20book%20a%20test." target="_blank" rel="noopener noreferrer" class="floating-wa flex items-center gap-3 bg-brand-green text-white px-5 py-3 rounded-full shadow-2xl hover:scale-105 transition-transform">
         <span class="text-[10px] font-black uppercase tracking-widest hidden sm:block text-right leading-none">Book Home<br>Collection</span>
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 0 5.495 0 12.05c0 2.096.547 4.142 1.588 5.945L0 24l6.105-1.604a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
     </a>
 
-    <!-- Navigation Header -->
+    <!-- GLOBAL HEADER -->
     <header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 flex flex-col">
-        <!-- Top Bar: Logo & Actions -->
+        <!-- Top Bar: Logo, Socials, Cart, and Mobile Menu Toggle -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-20 flex justify-between items-center">
+            <!-- Logo clicking triggers switchView('home') to return to the main page -->
             <div class="flex items-center cursor-pointer shrink-0" onclick="switchView('home')">
                 <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/WINPATH-LOGO-OG2.png" alt="Winpath" class="h-8 sm:h-10 w-auto object-contain">
             </div>
 
-            <!-- Action Buttons & Socials -->
             <div class="flex items-center gap-4 sm:gap-6">
-                <!-- Social Media Icons (Desktop & Tablet) -->
+                <!-- Social Media Icons (Hidden on very small screens) -->
                 <div class="hidden sm:flex items-center gap-4 border-r border-gray-200 pr-4 sm:pr-6">
                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="text-gray-400 hover:text-brand-blue transition-colors">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
@@ -126,7 +155,7 @@
                     </a>
                 </div>
 
-                <!-- Desktop Cart Button -->
+                <!-- Desktop Cart Button: The badge count is dynamically updated by JS -->
                 <button onclick="switchView('cart')" class="relative p-2 text-gray-500 hover:text-brand-blue transition-colors group flex items-center gap-2">
                     <div class="relative">
                         <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -135,12 +164,13 @@
                     <span class="hidden sm:block text-xs font-black uppercase tracking-widest mt-1">Cart</span>
                 </button>
 
+                <!-- Desktop Contact Button -->
                 <button onclick="switchView('contact')" class="hidden sm:block relative group active:scale-95 transition-all">
                     <span class="absolute -inset-1.5 brand-gradient-bg rounded-xl blur-md opacity-20 group-hover:opacity-60 transition-opacity"></span>
                     <div class="relative px-6 py-2.5 brand-gradient-bg text-sm font-black uppercase tracking-widest rounded-xl shadow-lg text-white">Contact Us</div>
                 </button>
 
-                <!-- Mobile Toggle -->
+                <!-- Mobile Hamburger Menu Toggle -->
                 <div class="xl:hidden flex items-center">
                     <button onclick="toggleMobileMenu()" class="p-2 text-brand-blue focus:outline-none">
                         <svg id="menu-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -151,14 +181,17 @@
         </div>
 
         <!-- Secondary Nav Bar (Desktop Mega Menu) -->
+        <!-- This bar contains the dropdowns. Clicking an option triggers filterByCategory() to sort the catalog. -->
         <div class="hidden xl:flex w-full h-16 border-t border-gray-50 bg-gray-50/30">
             <nav class="max-w-7xl mx-auto px-8 w-full flex justify-center space-x-12 items-center h-full">
                 <a href="javascript:void(0)" onclick="switchView('home')" class="text-sm font-black text-gray-500 hover:text-brand-blue uppercase tracking-widest transition-colors h-full flex items-center">Home</a>
                 
+                <!-- Mega Menu: Health Risks -->
                 <div class="relative h-full flex items-center group">
                     <button class="text-sm font-black text-gray-500 uppercase tracking-widest flex items-center gap-1 group-hover:text-brand-blue h-full">
                         Health Risks <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
                     </button>
+                    <!-- The dropdown panel -->
                     <div class="mega-menu absolute top-full left-0 w-48 bg-white shadow-2xl rounded-b-2xl border-t-2 border-brand-blue p-4 space-y-2 text-left">
                         <a href="javascript:void(0)" onclick="filterByCategory('risk', 'Heart')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Heart</a>
                         <a href="javascript:void(0)" onclick="filterByCategory('risk', 'Thyroid')" class="block text-sm font-bold text-gray-600 hover:text-brand-blue py-1">Thyroid</a>
@@ -168,6 +201,7 @@
                     </div>
                 </div>
 
+                <!-- Mega Menu: Health Conditions (Wide Grid Layout) -->
                 <div class="relative h-full flex items-center group">
                     <button class="text-sm font-black text-gray-500 uppercase tracking-widest flex items-center gap-1 group-hover:text-brand-blue h-full">
                         Health Conditions <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
@@ -191,6 +225,7 @@
                     </div>
                 </div>
 
+                <!-- Mega Menu: Health Check Packages -->
                 <div class="relative h-full flex items-center group">
                     <button class="text-sm font-black text-gray-500 uppercase tracking-widest flex items-center gap-1 group-hover:text-brand-blue h-full">
                         Health Check Packages <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
@@ -207,7 +242,7 @@
             </nav>
         </div>
 
-        <!-- Mobile Menu Drawer -->
+        <!-- Mobile Menu Drawer: Expands down when the hamburger icon is clicked on mobile -->
         <div id="mobile-menu" class="hidden xl:hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl overflow-y-auto max-h-[80vh]">
             <div class="px-6 py-8 space-y-6 flex flex-col items-center uppercase font-black text-base tracking-widest">
                 <a href="javascript:void(0)" onclick="switchView('home')">Home</a>
@@ -235,10 +270,19 @@
         </div>
     </header>
 
+    <!-- 
+      MAIN CONTENT CONTAINER:
+      This is where the Single Page Application (SPA) magic happens.
+      All "pages" exist inside this container. The `switchView()` javascript function
+      adds or removes the `.view-hidden` class to hide or show specific sections, 
+      giving the illusion of navigating to different pages instantly.
+    -->
     <div id="main-content">
-        <!-- 1. HOME VIEW -->
+        
+        <!-- 1. HOME VIEW: The main landing page -->
         <div id="home-view">
             <main class="pt-28 xl:pt-40">
+                <!-- Hero Section: Main title, subtitle, and primary call-to-action buttons -->
                 <section class="py-12 md:py-32 px-4 max-w-7xl mx-auto">
                     <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 text-center lg:text-left">
                         <div class="order-1 flex flex-col items-center lg:items-start">
@@ -258,6 +302,7 @@
                                 <button onclick="switchView('packages-page')" class="w-full sm:w-auto px-10 py-5 bg-white text-brand-blue font-black uppercase tracking-widest text-[10px] rounded-2xl border-2 border-brand-blue/10 hover:border-brand-blue active:scale-95 transition-all">Explore Catalog</button>
                             </div>
                         </div>
+                        <!-- Hero Image container with a glowing, pulsing background effect -->
                         <div class="order-2 relative w-full group">
                             <div class="absolute -inset-6 sm:-inset-10 brand-gradient-bg rounded-full opacity-5 blur-[80px] animate-pulse-slow"></div>
                             <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/Gemini_Generated_Image_6y9d06y9d06y9d06.png" alt="Diagnostic Laboratory" class="relative rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full h-auto object-cover border-[8px] border-white transition-transform duration-1000 group-hover:scale-[1.02]">
@@ -265,6 +310,7 @@
                     </div>
                 </section>
 
+                <!-- Featured Packages Section -->
                 <section class="py-20 sm:py-32 bg-white">
                     <div class="max-w-7xl mx-auto px-4">
                         <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-8 mb-16">
@@ -279,12 +325,14 @@
                             </button>
                         </div>
                         
+                        <!-- This grid is empty in HTML because `populateFeaturedPackages()` in main.js injects the top 4 packages here dynamically -->
                         <div id="featured-packages-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             <!-- Populated dynamically via JS -->
                         </div>
                     </div>
                 </section>
 
+                <!-- Diagnostic Specialties Grid (Static Informational Section) -->
                 <section class="py-20 bg-gray-50 border-t border-gray-100">
                     <div class="max-w-7xl mx-auto px-4 text-center">
                         <div class="inline-flex items-center gap-3 px-4 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-[9px] font-black uppercase tracking-[0.3em] mb-6 uppercase tracking-widest">Laboratory Expertise</div>
@@ -304,62 +352,77 @@
             </main>
         </div>
 
-        <!-- 2. CATALOG VIEW -->
+        <!-- 2. CATALOG VIEW: Contains the search bar and the full list of tests -->
+        <!-- Note the 'view-hidden' class on this div. It ensures this page doesn't show until the user clicks "Explore Catalog" -->
         <div id="packages-page-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-4">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 text-left">
                     <div>
+                        <!-- These titles change dynamically via JS if the user clicks a filter in the Mega Menu -->
                         <h1 class="text-4xl sm:text-7xl font-black text-gray-900 tracking-tighter uppercase leading-none" id="menu-title">Test <span class="brand-gradient-text italic">Menu.</span></h1>
                         <p class="text-gray-400 font-bold uppercase tracking-[0.3em] text-[9px] mt-4" id="menu-subtitle">Browsing 100+ clinical investigations</p>
                     </div>
                     <button onclick="clearFilter()" id="clear-btn" class="hidden px-8 py-3 bg-white border border-gray-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-brand-blue hover:border-brand-blue shadow-sm transition-all">Reset All</button>
                 </div>
+                
+                <!-- The Search Bar Input -->
                 <div class="max-w-2xl mb-16 relative group">
                     <div class="absolute -inset-1 brand-gradient-bg rounded-[2rem] blur opacity-20 group-focus-within:opacity-50 transition"></div>
                     <div class="relative bg-white rounded-[2rem] shadow-2xl flex items-center p-2 border border-gray-100">
                         <div class="pl-6 text-brand-blue"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
+                        <!-- 'oninput' triggers handleSearchInput() in main.js every time the user types a letter -->
                         <input type="text" id="test-search" placeholder="Search parameters (e.g. CBC, Lipid, Diabetes)..." class="w-full px-6 py-5 text-xl outline-none rounded-2xl bg-transparent font-semibold tracking-tight text-left" oninput="handleSearchInput()">
                         <button id="search-clear-icon" onclick="clearSearchInput()" class="hidden absolute right-6 text-gray-400 hover:text-brand-blue p-2 rounded-full focus:outline-none transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
                     </div>
                 </div>
+                
+                <!-- The actual grid of tests. The renderTests() function in main.js injects cards into this empty div. -->
                 <div id="test-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             </div>
         </div>
 
-        <!-- 3. TEST DETAIL VIEW -->
+        <!-- 3. TEST DETAIL VIEW: Shows expanded information when a user clicks a specific test card -->
         <div id="test-detail-view" class="view-hidden pt-32 xl:pt-48 pb-32 lg:pb-20 bg-white min-h-screen text-left">
             <div class="max-w-4xl mx-auto px-6">
+                <!-- Uses the goBack() JS function to remember the user's navigation history -->
                 <button onclick="goBack()" class="back-btn flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-blue mb-12">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Back to Catalog
                 </button>
+                <!-- showTestDetail() in main.js injects the large title, price, and description here -->
                 <div id="detail-content" class="text-left relative"></div>
             </div>
         </div>
 
-        <!-- 4. CART & CHECKOUT VIEW -->
+        <!-- 4. CART & CHECKOUT VIEW: The final step where users enter their details -->
         <div id="cart-view" class="view-hidden pt-32 xl:pt-40 pb-20 bg-gray-50 min-h-screen px-4 sm:px-6">
             <div class="max-w-6xl mx-auto text-left">
                 <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-12">Your <span class="brand-gradient-text italic">Cart.</span></h1>
                 
+                <!-- Shown if the cart array in JS is completely empty -->
                 <div id="empty-cart-msg" class="hidden text-center py-20 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
                     <svg class="w-20 h-20 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     <p class="text-xl font-black text-gray-400 mb-6 uppercase tracking-widest">Your cart is empty</p>
                     <button onclick="switchView('packages-page')" class="px-8 py-4 bg-brand-blue/10 text-brand-blue text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-brand-blue hover:text-white transition-all">Browse Tests</button>
                 </div>
 
+                <!-- The main checkout container, shown when items exist in the cart -->
                 <div id="cart-content" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start hidden">
                     <div class="lg:col-span-2 space-y-8">
+                        
+                        <!-- Box 1: The list of tests the user selected. Populated by renderCartView() in JS -->
                         <div class="bg-white p-6 sm:p-10 rounded-[3rem] shadow-sm border border-gray-100">
                             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue mb-8 border-b border-gray-100 pb-4">Selected Parameters</h2>
                             <div id="cart-items-list" class="space-y-6"></div>
                         </div>
 
+                        <!-- Box 2: The Customer Details Form -->
                         <div class="bg-white p-6 sm:p-10 rounded-[3rem] shadow-sm border border-gray-100">
                             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue mb-8 border-b border-gray-100 pb-4">Customer & Location Details</h2>
                             <div class="space-y-6">
+                                <!-- Row 1: Name, Age, Gender -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Full Name *</label>
@@ -381,6 +444,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Row 2: Mobile & Email -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Mobile Number *</label>
@@ -392,14 +456,18 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Row 3: Address & GPS Integration -->
                                 <div class="pt-4">
                                     <label class="text-[10px] font-black uppercase tracking-widest text-brand-green mb-2 block">Home Collection Address *</label>
                                     <div class="flex flex-col gap-4">
+                                        <!-- Clicking this triggers navigator.geolocation in JS to get exact coordinates -->
                                         <button onclick="locateUser()" class="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-4 bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                             Pinpoint GPS Location
                                         </button>
+                                        <!-- Displays success/error messages for GPS -->
                                         <span id="location-status" class="text-xs font-semibold text-gray-400 italic">No GPS location saved.</span>
+                                        <!-- Manual text address fallback -->
                                         <input type="text" id="checkout-address" class="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand-cyan transition-all text-sm font-semibold mt-2" placeholder="House/Flat No., Building, Landmark">
                                     </div>
                                 </div>
@@ -407,10 +475,13 @@
                         </div>
                     </div>
 
+                    <!-- Sticky Sidebar: The Final Bill Summary -->
                     <div>
+                        <!-- lg:sticky keeps this box visible as the user scrolls down long lists on desktop -->
                         <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 lg:sticky lg:top-32">
                             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900 mb-8 border-b border-gray-100 pb-4">Final Bill</h2>
                             
+                            <!-- The numbers here are fetched from billing.js by the renderCartView() function -->
                             <div class="space-y-4 mb-8 text-sm font-medium text-gray-600">
                                 <div class="flex justify-between"><span class="uppercase text-[9px] font-black tracking-widest">Subtotal</span><span id="bill-subtotal" class="font-bold text-gray-900">₹0</span></div>
                                 <div class="flex justify-between"><span class="uppercase text-[9px] font-black tracking-widest">Home Collection</span><span id="bill-collection" class="font-bold text-gray-900">₹0</span></div>
@@ -425,6 +496,7 @@
                                 </div>
                             </div>
 
+                            <!-- Final trigger: Starts validation, hits Google Forms, and opens WhatsApp -->
                             <button id="checkout-btn" onclick="proceedToWhatsApp()" class="w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all mb-6">Proceed to WhatsApp Checkout</button>
                             
                             <div class="bg-gray-50 p-4 rounded-2xl text-center">
@@ -436,7 +508,7 @@
             </div>
         </div>
 
-        <!-- 5. STATIC TEXT VIEWS -->
+        <!-- 5. STATIC TEXT VIEWS: Standard informational pages mapped directly in the HTML -->
         <div id="privacy-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
             <div class="max-w-3xl mx-auto text-left">
                 <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Privacy Policy.</h1>
@@ -492,6 +564,7 @@
                     <h2 class="text-3xl sm:text-5xl font-black text-gray-900 mb-4 tracking-tighter">Strategic <span class="brand-gradient-text italic">Roadmap.</span></h2>
                     <p class="text-gray-500 text-sm mb-12 max-w-2xl leading-relaxed">The milestones that define our commitment to precision and the goals we are building towards for our customers.</p>
                     
+                    <!-- This container is dynamically populated by renderRoadmap() in main.js based on data.js -->
                     <div id="roadmap-container" class="relative border-l-2 border-brand-cyan/20 ml-3 sm:ml-5 space-y-8 pb-4">
                         <!-- Populated by JS -->
                     </div>
@@ -499,7 +572,6 @@
             </div>
         </div>
 
-        <!-- Contact View -->
         <div id="contact-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-6">
             <div class="max-w-4xl mx-auto text-center">
                 <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-16 text-center">Contact <span class="brand-gradient-text italic">Us.</span></h1>
@@ -527,10 +599,12 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 mb-20 text-left">
                 <div>
+                    <!-- Logo is grayscaled and brightened to fit the dark footer theme -->
                     <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/WINPATH-LOGO-OG2.png" alt="Winpath" class="h-10 mb-8 grayscale brightness-200">
                     <p class="text-gray-500 text-sm font-medium leading-relaxed max-w-sm italic">Bengaluru's premier pathologist-led diagnostic center. Clinical excellence since 2012.</p>
                 </div>
                 <div class="grid grid-cols-2 gap-8 font-bold text-gray-500 text-xs tracking-widest uppercase">
+                    <!-- Quick Links that utilize switchView() -->
                     <ul class="space-y-4">
                         <li><a href="javascript:void(0)" onclick="switchView('home')" class="hover:text-brand-cyan transition-colors">Home</a></li>
                         <li><a href="javascript:void(0)" onclick="switchView('about')" class="hover:text-brand-cyan transition-colors">About Us</a></li>
@@ -542,6 +616,7 @@
                         <li><a href="javascript:void(0)" onclick="switchView('terms')" class="hover:text-brand-cyan transition-colors">Terms</a></li>
                     </ul>
                 </div>
+                <!-- Trust Badges -->
                 <div class="bg-gray-900/50 p-8 rounded-[2.5rem] border border-gray-800">
                     <h4 class="text-brand-cyan text-[9px] font-black uppercase tracking-[0.3em] mb-4">Accreditation</h4>
                     <p class="text-gray-400 text-[10px] leading-relaxed mb-6 font-medium italic italic">Strict ISO 15189:2022 protocols for precision in clinical reporting.</p>
@@ -551,6 +626,7 @@
                     </div>
                 </div>
             </div>
+            <!-- Copyright & Status -->
             <div class="pt-12 border-t border-gray-800/50 flex flex-col md:flex-row justify-between items-center gap-6">
                 <p class="text-gray-600 text-[9px] font-black uppercase tracking-[0.2em]">© 2026 Winpath Diagnostics. Bengaluru, KA.</p>
                 <div class="flex items-center gap-2 font-black text-[9px] text-gray-600 uppercase tracking-widest"><span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span> Network Operational</div>
@@ -558,8 +634,14 @@
         </div>
     </footer>
 
-    <!-- EXTERNAL JS DEPENDENCIES -->
-    <!-- Ensure data.js, billing.js, patient-details.js, cart.js & main.js exist on GitHub! -->
+    <!-- 
+      EXTERNAL JS DEPENDENCIES 
+      Because your codebase is separated cleanly, these script tags load the logic in order:
+      1. data.js -> The array of tests
+      2. billing.js -> The fees and discount math
+      3. patient-details.js -> The Google Forms direct tracking
+      4. main.js -> The core UI logic that stitches it all together
+    -->
     <script src="data.js"></script>
     <script src="billing.js"></script>
     <script src="patient-details.js"></script>

@@ -1,35 +1,50 @@
 // =====================================================================
-// CUSTOMER & LOCATION DETAILS (Google Sheets Integration)
+// CUSTOMER & LOCATION DETAILS (Google Forms Gateway)
 // =====================================================================
 
-// IMPORTANT: Replace the URL below with your actual Google Apps Script Web App URL
-// This URL is obtained after clicking Deploy > New Deployment in Google Apps Script.
-const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyD26G_gNDTbMZKebGUUfmYIs2voSO6gRa3OmyNYjY2gFDpf7hnkukb7JGAWarAIF27Xw/exec";
+/**
+ * DIRECT MAPPING GATEWAY
+ * This file connects your custom website fields directly to your Google Form.
+ * Data lands in your linked Google Sheet instantly upon checkout.
+ */
+
+// Your specific Form Response URL
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe-eX7YISxrHAgkg9_9O-f8j_tzT02k5C9GQzDuME9Rcm94kA/formResponse";
 
 /**
- * Silently submits checkout data to a Google Sheet in the background.
- * Uses the 'GET' method with URL parameters for maximum reliability.
+ * Maps website fields to Google Sheets via your Google Form bridge.
  */
 async function recordPatientDetails(customerData) {
-    if (!GOOGLE_SHEETS_WEB_APP_URL || GOOGLE_SHEETS_WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbyD26G_gNDTbMZKebGUUfmYIs2voSO6gRa3OmyNYjY2gFDpf7hnkukb7JGAWarAIF27Xw/exec")) {
-        console.warn("Google Sheets URL not configured. Skipping background tracking.");
+    if (!GOOGLE_FORM_URL) {
+        console.warn("Google Form URL not configured.");
         return;
     }
 
     try {
-        // --- FINAL RELIABILITY LOGIC ---
-        // We use GET because it is the most robust way to ensure data survives 
-        // the Google Apps Script security redirect across all browsers.
-        const payload = encodeURIComponent(JSON.stringify(customerData));
-        const finalUrl = `${GOOGLE_SHEETS_WEB_APP_URL}?payload=${payload}`;
+        // We use the exact entry IDs you extracted from the pre-filled link
+        const formData = new URLSearchParams();
+        formData.append("entry.898710334", customerData.name);        // Name
+        formData.append("entry.921188093", customerData.age);         // Age
+        formData.append("entry.154247004", customerData.gender);      // Gender
+        formData.append("entry.1047906780", customerData.mobile);     // Mobile
+        formData.append("entry.1450782203", customerData.email);      // Email
+        formData.append("entry.913704077", customerData.address);     // Address Note
+        formData.append("entry.636938048", customerData.gpsLink);     // GPS Link
+        formData.append("entry.1007532172", customerData.tests);      // Tests Booked
+        formData.append("entry.1433709427", customerData.totalAmount); // Total Amount
 
-        await fetch(finalUrl, {
-            method: 'GET',
-            mode: 'no-cors' // Allows the request to be sent silently without security errors
+        // Submit the data silently in the background
+        await fetch(GOOGLE_FORM_URL, {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData.toString()
         });
         
-        console.log("Customer data successfully dispatched to Google Sheets via GET payload.");
+        console.log("Data successfully logged to Google Sheet.");
     } catch (error) {
-        console.error("Error submitting to Google Sheets:", error);
+        console.error("Data capture failed:", error);
     }
 }

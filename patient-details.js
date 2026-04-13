@@ -9,7 +9,7 @@
  */
 
 // Your specific Form Response URL
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe-eX7YISxrHAgkg9_9O-f8j_tzT02k5C9GQzDuME9Rcm94kA/formResponse";
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe-eX7YISxrHAgkg9_9O-f8j_tzT02k5C9GQzDuME9Rcm94kA/viewform?usp=dialog";
 
 /**
  * Maps website fields to Google Sheets via your Google Form bridge.

@@ -245,7 +245,7 @@ function renderCartView() {
         const discountEl = document.getElementById('bill-discount');
         const promoLabel = document.getElementById('active-promo-label');
         
-        // --- NEW: UI Elements for Promo Toggle ---
+        // --- UI Elements for Promo Toggle ---
         const promoInput = document.getElementById('promo-code-input');
         const applyBtn = document.getElementById('promo-apply-btn');
         const removeBtn = document.getElementById('promo-remove-btn');
@@ -281,6 +281,7 @@ function renderCartView() {
         // Final total (Math.max ensures the total never goes below 0)
         document.getElementById('bill-total').innerText = `₹${Math.max(0, Math.round(total)).toLocaleString()}`;
     }
+}
 
 // =====================================================================
 // CHECKOUT & GPS INTEGRATION
@@ -403,8 +404,8 @@ async function proceedToWhatsApp() {
     checkoutBtn.innerText = "Processing Details...";
     checkoutBtn.disabled = true;
 
-    // --- UPDATED Google Sheets Dispatch ---
-    // We now include the appliedPromoCode in the data bundle
+    // 6. Google Sheets Dispatch
+    // Bundle the data and hand it off to patient-details.js to send to the Form
     const customerData = {
         name: name,
         age: age,
@@ -419,7 +420,7 @@ async function proceedToWhatsApp() {
     };
 
     if (typeof recordPatientDetails === 'function') {
-        await recordPatientDetails(customerData);
+        await recordPatientDetails(customerData); // Await the background fetch request
     }
     
     checkoutBtn.innerText = originalBtnText;

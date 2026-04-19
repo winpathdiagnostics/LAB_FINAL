@@ -288,6 +288,51 @@ function renderCartView() {
 // =====================================================================
 
 /**
+ * UX Function: Checks the pincode as the user types.
+ * Turns the box red and disables the checkout button if out of bounds.
+ */
+function checkPincode() {
+    const input = document.getElementById('checkout-pincode');
+    const errorMsg = document.getElementById('pincode-error');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    const val = input ? input.value.trim() : "";
+
+    // Fallback if BILLING_CONFIG isn't loaded properly
+    if (typeof BILLING_CONFIG === 'undefined' || !BILLING_CONFIG.serviceablePincodes) return;
+
+    // Only check once they've typed all 6 digits
+    if (val.length === 6) {
+        if (BILLING_CONFIG.serviceablePincodes.includes(val)) {
+            // Success State: Pincode is in the serviceable list
+            input.classList.remove('border-red-500', 'text-red-500');
+            input.classList.add('border-brand-green', 'text-brand-green');
+            errorMsg.classList.add('hidden');
+            if (checkoutBtn) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        } else {
+            // Failure State: Pincode is not serviceable
+            input.classList.remove('border-brand-green', 'text-brand-green');
+            input.classList.add('border-red-500', 'text-red-500');
+            errorMsg.classList.remove('hidden');
+            if (checkoutBtn) {
+                checkoutBtn.disabled = true; // Lock the button from being clicked
+                checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    } else {
+        // Reset state while they are typing (less than 6 digits)
+        if(input) input.classList.remove('border-red-500', 'text-red-500', 'border-brand-green', 'text-brand-green');
+        if(errorMsg) errorMsg.classList.add('hidden');
+        if (checkoutBtn) {
+            checkoutBtn.disabled = false;
+            checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+}
+
+/**
  * Accesses the user's phone/browser GPS to pinpoint their location for home collection.
  */
 function locateUser() {
@@ -335,6 +380,7 @@ async function proceedToWhatsApp() {
     const genderEl = document.getElementById('checkout-gender');
     const mobileEl = document.getElementById('checkout-mobile');
     const emailEl = document.getElementById('checkout-email');
+    const pincodeEl = document.getElementById('checkout-pincode'); // The new pincode element
     const addressEl = document.getElementById('checkout-address');
 
     const name = nameEl.value.trim();
@@ -342,10 +388,11 @@ async function proceedToWhatsApp() {
     const gender = genderEl.value;
     const mobile = mobileEl.value.trim();
     const email = emailEl.value.trim();
+    const pincode = pincodeEl ? pincodeEl.value.trim() : ""; // Extract pincode text
     const address = addressEl.value.trim();
 
     // 2. Reset previous validation red borders
-    [nameEl, ageEl, genderEl, mobileEl, addressEl].forEach(el => {
+    [nameEl, ageEl, genderEl, mobileEl, pincodeEl, addressEl].forEach(el => {
         if (el) el.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
     });
 
@@ -355,6 +402,19 @@ async function proceedToWhatsApp() {
     if (!age) { missingFields.push("Age"); ageEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
     if (!gender) { missingFields.push("Gender"); genderEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
     if (!mobile) { missingFields.push("Mobile Number"); mobileEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
+    
+    // NEW: Pincode Hard Gate Validation 
+    if (typeof BILLING_CONFIG !== 'undefined' && BILLING_CONFIG.serviceablePincodes) {
+        if (!pincode || pincode.length !== 6) { 
+            missingFields.push("Valid 6-Digit Pincode"); 
+            if(pincodeEl) pincodeEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); 
+        } else if (!BILLING_CONFIG.serviceablePincodes.includes(pincode)) {
+            // Stops the checkout dead in its tracks if they bypass the UI somehow
+            alert("We apologize, but Winpath Diagnostics currently does not offer home collection services at pincode " + pincode + ". Please contact us directly for alternative arrangements.");
+            return; // HARD STOP
+        }
+    }
+
     // User must provide EITHER a typed address OR a GPS link
     if (!address && !userLocationLink) { missingFields.push("Home Collection Address (or GPS Location)"); addressEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
 
@@ -370,6 +430,7 @@ async function proceedToWhatsApp() {
     message += `Age: ${age} Yrs | Gender: ${gender}\n`;
     message += `Mobile: ${mobile}\n`;
     if (email) message += `Email: ${email}\n`;
+    message += `Pincode: ${pincode}\n`; // Append Pincode to WhatsApp msg
     if (userLocationLink) message += `GPS Link: ${userLocationLink}\n`;
     if (address) message += `Address Note: ${address}\n\n`;
 
@@ -412,7 +473,7 @@ async function proceedToWhatsApp() {
         gender: gender,
         mobile: mobile,
         email: email || "N/A",
-        address: address || "N/A",
+        address: (pincode ? `[${pincode}] ` : '') + (address || "N/A"), // Prepends pincode to address string sent to Sheets
         gpsLink: userLocationLink || "N/A",
         tests: shoppingCart.map(item => item.name).join(", "),
         totalAmount: Math.max(0, Math.round(total)),

@@ -28,12 +28,9 @@ const BILLING_CONFIG = {
     // The 'checkPincode()' function in main.js cross-references against this array.
     // To expand your service area in Bengaluru, simply add the new pincodes here as strings.
     serviceablePincodes: [
-        "560001", 
-        "560002", 
-        "560003", 
-        "560008", 
-        "560034", 
-        "560038" 
+        "560045", 
+        "560064" 
+         
         // Example to add later: , "560066", "560067"
     ]
 };

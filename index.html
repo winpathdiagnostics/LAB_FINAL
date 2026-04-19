@@ -9,9 +9,8 @@
     
     <!-- 
       CONTENT SECURITY POLICY (CSP): 
-      This is a vital security feature. It dictates exactly which external resources your website is allowed to load or talk to.
-      Crucially, we added 'https://docs.google.com' to the 'connect-src' directive here so your website is permitted 
-      to send checkout data silently to your Google Form.
+      Dictates exactly which external resources your website is allowed to load or talk to.
+      Permits sending checkout data silently to your Google Form.
     -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com data:;">    
     
@@ -28,7 +27,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    // Defining custom brand colors so they can be used like 'bg-brand-blue' or 'text-brand-cyan'
+                    // Defining custom brand colors
                     colors: {
                         brand: {
                             blue: '#2C5EB4',
@@ -39,7 +38,7 @@
                     },
                     // Setting the default sans-serif font to 'Outfit'
                     fontFamily: { sans: ['Outfit', 'Inter', 'sans-serif'] },
-                    // Creating custom CSS animations for the floating buttons and background effects
+                    // Custom CSS animations for floating buttons and background effects
                     animation: {
                         'float': 'float 3s ease-in-out infinite',
                         'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -129,7 +128,9 @@
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 0 5.495 0 12.05c0 2.096.547 4.142 1.588 5.945L0 24l6.105-1.604a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
     </a>
 
-    <!-- GLOBAL HEADER -->
+    <!-- ==========================================
+         GLOBAL HEADER & NAVIGATION
+         ========================================== -->
     <header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 flex flex-col">
         <!-- Top Bar: Logo, Socials, Cart, and Mobile Menu Toggle -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-20 flex justify-between items-center">
@@ -181,7 +182,6 @@
         </div>
 
         <!-- Secondary Nav Bar (Desktop Mega Menu) -->
-        <!-- This bar contains the dropdowns. Clicking an option triggers filterByCategory() to sort the catalog. -->
         <div class="hidden xl:flex w-full h-16 border-t border-gray-50 bg-gray-50/30">
             <nav class="max-w-7xl mx-auto px-8 w-full flex justify-center space-x-12 items-center h-full">
                 <a href="javascript:void(0)" onclick="switchView('home')" class="text-sm font-black text-gray-500 hover:text-brand-blue uppercase tracking-widest transition-colors h-full flex items-center">Home</a>
@@ -242,7 +242,7 @@
             </nav>
         </div>
 
-        <!-- Mobile Menu Drawer: Expands down when the hamburger icon is clicked on mobile -->
+        <!-- Mobile Menu Drawer -->
         <div id="mobile-menu" class="hidden xl:hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl overflow-y-auto max-h-[80vh]">
             <div class="px-6 py-8 space-y-6 flex flex-col items-center uppercase font-black text-base tracking-widest">
                 <a href="javascript:void(0)" onclick="switchView('home')">Home</a>
@@ -270,19 +270,15 @@
         </div>
     </header>
 
-    <!-- 
-      MAIN CONTENT CONTAINER:
-      This is where the Single Page Application (SPA) magic happens.
-      All "pages" exist inside this container. The `switchView()` javascript function
-      adds or removes the `.view-hidden` class to hide or show specific sections, 
-      giving the illusion of navigating to different pages instantly.
-    -->
+    <!-- ==========================================
+         MAIN CONTENT CONTAINER (SPA VIEWS)
+         ========================================== -->
     <div id="main-content">
         
-        <!-- 1. HOME VIEW: The main landing page -->
+        <!-- 1. HOME VIEW -->
         <div id="home-view">
             <main class="pt-28 xl:pt-40">
-                <!-- Hero Section: Main title, subtitle, and primary call-to-action buttons -->
+                <!-- Hero Section -->
                 <section class="py-12 md:py-32 px-4 max-w-7xl mx-auto">
                     <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 text-center lg:text-left">
                         <div class="order-1 flex flex-col items-center lg:items-start">
@@ -302,10 +298,9 @@
                                 <button onclick="switchView('packages-page')" class="w-full sm:w-auto px-10 py-5 bg-white text-brand-blue font-black uppercase tracking-widest text-[10px] rounded-2xl border-2 border-brand-blue/10 hover:border-brand-blue active:scale-95 transition-all">Explore Catalog</button>
                             </div>
                         </div>
-                        <!-- Hero Image container with a glowing, pulsing background effect -->
                         <div class="order-2 relative w-full group">
                             <div class="absolute -inset-6 sm:-inset-10 brand-gradient-bg rounded-full opacity-5 blur-[80px] animate-pulse-slow"></div>
-                            <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/Gemini_Generated_Image_6y9d06y9d06y9d06.png" alt="Diagnostic Laboratory" class="relative rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full h-auto object-cover border-[8px] border-white transition-transform duration-1000 group-hover:scale-[1.02]">
+                            <img src="https://raw.githubusercontent.com/winpathdiagnostics/Trial-3/main/Gemini_Generated_Image_6y9d06y9d06y9d06.png" alt="Diagnostic Laboratory" onerror="this.src='https://images.unsplash.com/photo-1579154204601-01588f351e67?q=80&w=2070&auto=format&fit=crop';" class="relative rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full h-auto object-cover border-[8px] border-white transition-transform duration-1000 group-hover:scale-[1.02]">
                         </div>
                     </div>
                 </section>
@@ -324,15 +319,11 @@
                                 <span class="brand-gradient-text">Explore All 100+ Tests</span>
                             </button>
                         </div>
-                        
-                        <!-- This grid is empty in HTML because `populateFeaturedPackages()` in main.js injects the top 4 packages here dynamically -->
-                        <div id="featured-packages-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <!-- Populated dynamically via JS -->
-                        </div>
+                        <div id="featured-packages-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
                     </div>
                 </section>
 
-                <!-- Diagnostic Specialties Grid (Static Informational Section) -->
+                <!-- Diagnostic Specialties Grid (Fully Restored 8 Items) -->
                 <section class="py-20 bg-gray-50 border-t border-gray-100">
                     <div class="max-w-7xl mx-auto px-4 text-center">
                         <div class="inline-flex items-center gap-3 px-4 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-[9px] font-black uppercase tracking-[0.3em] mb-6 uppercase tracking-widest">Laboratory Expertise</div>
@@ -352,25 +343,21 @@
             </main>
         </div>
 
-        <!-- 2. CATALOG VIEW: Contains the search bar and the full list of tests -->
-        <!-- Note the 'view-hidden' class on this div. It ensures this page doesn't show until the user clicks "Explore Catalog" -->
+        <!-- 2. CATALOG VIEW -->
         <div id="packages-page-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-gray-50 min-h-screen px-4">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 text-left">
                     <div>
-                        <!-- These titles change dynamically via JS if the user clicks a filter in the Mega Menu -->
                         <h1 class="text-4xl sm:text-7xl font-black text-gray-900 tracking-tighter uppercase leading-none" id="menu-title">Test <span class="brand-gradient-text italic">Menu.</span></h1>
                         <p class="text-gray-400 font-bold uppercase tracking-[0.3em] text-[9px] mt-4" id="menu-subtitle">Browsing 100+ clinical investigations</p>
                     </div>
                     <button onclick="clearFilter()" id="clear-btn" class="hidden px-8 py-3 bg-white border border-gray-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-brand-blue hover:border-brand-blue shadow-sm transition-all">Reset All</button>
                 </div>
                 
-                <!-- The Search Bar Input -->
                 <div class="max-w-2xl mb-16 relative group">
                     <div class="absolute -inset-1 brand-gradient-bg rounded-[2rem] blur opacity-20 group-focus-within:opacity-50 transition"></div>
                     <div class="relative bg-white rounded-[2rem] shadow-2xl flex items-center p-2 border border-gray-100">
                         <div class="pl-6 text-brand-blue"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
-                        <!-- 'oninput' triggers handleSearchInput() in main.js every time the user types a letter -->
                         <input type="text" id="test-search" placeholder="Search parameters (e.g. CBC, Lipid, Diabetes)..." class="w-full px-6 py-5 text-xl outline-none rounded-2xl bg-transparent font-semibold tracking-tight text-left" oninput="handleSearchInput()">
                         <button id="search-clear-icon" onclick="clearSearchInput()" class="hidden absolute right-6 text-gray-400 hover:text-brand-blue p-2 rounded-full focus:outline-none transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -378,51 +365,44 @@
                     </div>
                 </div>
                 
-                <!-- The actual grid of tests. The renderTests() function in main.js injects cards into this empty div. -->
                 <div id="test-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             </div>
         </div>
 
-        <!-- 3. TEST DETAIL VIEW: Shows expanded information when a user clicks a specific test card -->
+        <!-- 3. TEST DETAIL VIEW -->
         <div id="test-detail-view" class="view-hidden pt-32 xl:pt-48 pb-32 lg:pb-20 bg-white min-h-screen text-left">
             <div class="max-w-4xl mx-auto px-6">
-                <!-- Uses the goBack() JS function to remember the user's navigation history -->
                 <button onclick="goBack()" class="back-btn flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-blue mb-12">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Back to Catalog
                 </button>
-                <!-- showTestDetail() in main.js injects the large title, price, and description here -->
                 <div id="detail-content" class="text-left relative"></div>
             </div>
         </div>
 
-        <!-- 4. CART & CHECKOUT VIEW: The final step where users enter their details -->
+        <!-- 4. CART & CHECKOUT VIEW -->
         <div id="cart-view" class="view-hidden pt-32 xl:pt-40 pb-20 bg-gray-50 min-h-screen px-4 sm:px-6">
             <div class="max-w-6xl mx-auto text-left">
                 <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter uppercase mb-12">Your <span class="brand-gradient-text italic">Cart.</span></h1>
                 
-                <!-- Shown if the cart array in JS is completely empty -->
                 <div id="empty-cart-msg" class="hidden text-center py-20 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
                     <svg class="w-20 h-20 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     <p class="text-xl font-black text-gray-400 mb-6 uppercase tracking-widest">Your cart is empty</p>
                     <button onclick="switchView('packages-page')" class="px-8 py-4 bg-brand-blue/10 text-brand-blue text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-brand-blue hover:text-white transition-all">Browse Tests</button>
                 </div>
 
-                <!-- The main checkout container, shown when items exist in the cart -->
                 <div id="cart-content" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start hidden">
                     <div class="lg:col-span-2 space-y-8">
                         
-                        <!-- Box 1: The list of tests the user selected. Populated by renderCartView() in JS -->
                         <div class="bg-white p-6 sm:p-10 rounded-[3rem] shadow-sm border border-gray-100">
                             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue mb-8 border-b border-gray-100 pb-4">Selected Parameters</h2>
                             <div id="cart-items-list" class="space-y-6"></div>
                         </div>
 
-                        <!-- Box 2: The Customer Details Form -->
+                        <!-- Customer Form -->
                         <div class="bg-white p-6 sm:p-10 rounded-[3rem] shadow-sm border border-gray-100">
                             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue mb-8 border-b border-gray-100 pb-4">Customer & Location Details</h2>
                             <div class="space-y-6">
-                                <!-- Row 1: Name, Age, Gender -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Full Name *</label>
@@ -444,7 +424,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Row 2: Mobile & Email -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Mobile Number *</label>
@@ -456,18 +435,25 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Row 3: Address & GPS Integration -->
-                                <div class="pt-4">
+                                <!-- THE NEW PINCODE BLOCK: Verifies serviceability area -->
+                                <div class="grid grid-cols-1 mb-6 mt-4 border-t border-gray-100 pt-6">
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-brand-blue mb-2 block">Service Pincode *</label>
+                                        <input type="text" id="checkout-pincode" maxlength="6" pattern="[0-9]*" class="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none border-2 border-transparent focus:border-brand-cyan transition-all text-sm font-semibold" placeholder="Enter 6-digit pincode" oninput="checkPincode()">
+                                        <!-- Error message for unserviceable pincodes -->
+                                        <span id="pincode-error" class="hidden text-[10px] font-bold text-red-500 mt-2 tracking-wide uppercase">⚠️ We currently do not offer home collection in this area.</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Address Block -->
+                                <div class="pt-2">
                                     <label class="text-[10px] font-black uppercase tracking-widest text-brand-green mb-2 block">Home Collection Address *</label>
                                     <div class="flex flex-col gap-4">
-                                        <!-- Clicking this triggers navigator.geolocation in JS to get exact coordinates -->
                                         <button onclick="locateUser()" class="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-4 bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                             Pinpoint GPS Location
                                         </button>
-                                        <!-- Displays success/error messages for GPS -->
                                         <span id="location-status" class="text-xs font-semibold text-gray-400 italic">No GPS location saved.</span>
-                                        <!-- Manual text address fallback -->
                                         <input type="text" id="checkout-address" class="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand-cyan transition-all text-sm font-semibold mt-2" placeholder="House/Flat No., Building, Landmark">
                                     </div>
                                 </div>
@@ -475,20 +461,17 @@
                         </div>
                     </div>
 
-                    <!-- Sticky Sidebar: The Final Bill Summary -->
+                    <!-- Final Bill Sidebar -->
                     <div>
-                        <!-- lg:sticky keeps this box visible as the user scrolls down long lists on desktop -->
                         <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 lg:sticky lg:top-32">
                             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900 mb-6 border-b border-gray-100 pb-4">Final Bill</h2>
                             
-                            <!-- Promo Code Input Box: Added to allow users to trigger discounts configured in billing.js -->
                             <div class="flex gap-2 mb-8">
                                 <input type="text" id="promo-code-input" placeholder="Enter Promo Code" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-brand-cyan uppercase text-xs font-bold tracking-widest text-gray-900 placeholder-gray-400 transition-colors">
                                 <button id="promo-apply-btn" onclick="applyPromoCode()" class="px-6 py-3 bg-gray-900 hover:bg-brand-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-md active:scale-95">Apply</button>
                                 <button id="promo-remove-btn" onclick="removePromoCode()" class="hidden px-5 py-3 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-md active:scale-95">Cancel</button>
                             </div>
 
-                            <!-- Billing Breakdown: Values are populated dynamically by main.js pulling from billing.js -->
                             <div class="space-y-4 mb-8 text-sm font-medium text-gray-600">
                                 <div class="flex justify-between"><span class="uppercase text-[9px] font-black tracking-widest">Subtotal</span><span id="bill-subtotal" class="font-bold text-gray-900">₹0</span></div>
                                 <div class="flex justify-between"><span class="uppercase text-[9px] font-black tracking-widest">Home Collection</span><span id="bill-collection" class="font-bold text-gray-900">₹0</span></div>
@@ -504,7 +487,6 @@
                                 </div>
                             </div>
 
-                            <!-- Final trigger: Starts validation, hits Google Forms, and opens WhatsApp -->
                             <button id="checkout-btn" onclick="proceedToWhatsApp()" class="w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all mb-6">Proceed to WhatsApp Checkout</button>
                             
                             <div class="bg-gray-50 p-4 rounded-2xl text-center">
@@ -516,7 +498,7 @@
             </div>
         </div>
 
-        <!-- 5. STATIC TEXT VIEWS: Standard informational pages mapped directly in the HTML -->
+        <!-- 5. STATIC TEXT VIEWS (Fully Restored) -->
         <div id="privacy-view" class="view-hidden pt-32 xl:pt-48 pb-20 bg-white min-h-screen px-6">
             <div class="max-w-3xl mx-auto text-left">
                 <h1 class="text-4xl font-black text-slate-900 mb-12 brand-gradient-text uppercase tracking-widest">Privacy Policy.</h1>
@@ -572,10 +554,8 @@
                     <h2 class="text-3xl sm:text-5xl font-black text-gray-900 mb-4 tracking-tighter">Strategic <span class="brand-gradient-text italic">Roadmap.</span></h2>
                     <p class="text-gray-500 text-sm mb-12 max-w-2xl leading-relaxed">The milestones that define our commitment to precision and the goals we are building towards for our customers.</p>
                     
-                    <!-- This container is dynamically populated by renderRoadmap() in main.js based on data.js -->
-                    <div id="roadmap-container" class="relative border-l-2 border-brand-cyan/20 ml-3 sm:ml-5 space-y-8 pb-4">
-                        <!-- Populated by JS -->
-                    </div>
+                    <!-- Roadmap populated dynamically via main.js & data.js -->
+                    <div id="roadmap-container" class="relative border-l-2 border-brand-cyan/20 ml-3 sm:ml-5 space-y-8 pb-4"></div>
                 </div>
             </div>
         </div>
@@ -602,7 +582,9 @@
         </div>
     </div>
 
-    <!-- MAIN FOOTER -->
+    <!-- ==========================================
+         MAIN FOOTER (Fully Restored)
+         ========================================== -->
     <footer class="bg-brand-dark py-20 border-t border-gray-800">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 mb-20 text-left">
@@ -643,7 +625,7 @@
     </footer>
 
     <!-- 
-      EXTERNAL JS DEPENDENCIES 
+      EXTERNAL JS DEPENDENCIES (Restored for GitHub usage)
       Because your codebase is separated cleanly, these script tags load the logic in order:
       1. data.js -> The array of tests
       2. billing.js -> The fees and discount math

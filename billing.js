@@ -41,6 +41,8 @@ const BILLING_CONFIG = {
 
 // This array holds the items currently added to the patient's cart
 let cartItems = [];
+let appliedPromoDiscount = 0;
+let appliedPromoCodeStr = "";
 
 /**
  * Helper function to parse prices safely.
@@ -95,33 +97,77 @@ function removeFromCart(testId) {
 }
 
 /**
+ * Applies the promo code entered by the user
+ */
+function applyPromoCode() {
+    const input = document.getElementById('promo-code-input');
+    if (!input) return;
+    const code = input.value.trim().toUpperCase();
+    
+    if (!code) return;
+
+    if (typeof BILLING_CONFIG !== 'undefined' && BILLING_CONFIG.validDiscountCodes[code]) {
+        appliedPromoDiscount = BILLING_CONFIG.validDiscountCodes[code];
+        appliedPromoCodeStr = code;
+        updateBillingDisplay();
+    } else {
+        appliedPromoDiscount = 0;
+        appliedPromoCodeStr = "";
+        alert("Invalid or expired discount code.");
+        input.value = "";
+        updateBillingDisplay();
+    }
+}
+
+/**
+ * Removes the active promo code
+ */
+function removePromoCode() {
+    appliedPromoDiscount = 0;
+    appliedPromoCodeStr = "";
+    const input = document.getElementById('promo-code-input');
+    if (input) input.value = "";
+    updateBillingDisplay();
+}
+
+/**
  * Calculates the total bill based on Cart Items, Configuration Fees, and Dynamic Discounts
  */
 function updateBillingDisplay() {
     let subtotal = 0;
+    let standaloneSubtotal = 0;
     let totalMrp = 0;
     
-    // 1. Calculate Base Total & MRP
+    // 1. Calculate Base Total & MRP & Standalone Subtotal
     cartItems.forEach(item => {
-        subtotal += parsePrice(item.price);
+        const itemPrice = parsePrice(item.price);
+        subtotal += itemPrice;
         totalMrp += parsePrice(item.mrp || item.price); // Fallback to price if MRP is missing
+        
+        // If it's not a package, it's a standalone test
+        if (!item.isPackage) {
+            standaloneSubtotal += itemPrice;
+        }
     });
 
-    // 2. Fetch the custom discount percentage (Y%) from the Clerk/Marketing input field
-    const discountInputEl = document.getElementById('discount-input');
-    const customDiscountPercentage = discountInputEl ? (parseFloat(discountInputEl.value) || 0) : 0;
-    const safeDiscountPercentage = Math.min(Math.max(customDiscountPercentage, 0), 100);
+    // 2. Auto Discount (10% on standalone tests if their total is > 1000)
+    let autoDiscountAmount = 0;
+    if (standaloneSubtotal > 1000) {
+        autoDiscountAmount = (standaloneSubtotal * 10) / 100;
+    }
 
-    // 3. Fetch Operational Fees from BILLING_CONFIG
+    // 3. Promo Code Discount (Applies to the whole subtotal)
+    let promoDiscountAmount = (subtotal * appliedPromoDiscount) / 100;
+
+    // 4. Fetch Operational Fees from BILLING_CONFIG
     // Only apply fees if there is at least 1 item in the cart
     const activeCollectionFee = cartItems.length > 0 ? BILLING_CONFIG.homeCollectionFee : 0;
     const activeBookingFee = cartItems.length > 0 ? BILLING_CONFIG.bookingFee : 0;
     const activePlatformFee = cartItems.length > 0 ? BILLING_CONFIG.platformFee : 0;
 
-    // 4. Calculate Final Amounts
-    // The discount is strictly applied to the subtotal of the tests, not the operational fees
-    const discountAmount = (subtotal * safeDiscountPercentage) / 100;
-    const finalTotal = subtotal + activeCollectionFee + activeBookingFee + activePlatformFee - discountAmount;
+    // 5. Calculate Final Amounts
+    const totalDiscount = autoDiscountAmount + promoDiscountAmount;
+    const finalTotal = subtotal + activeCollectionFee + activeBookingFee + activePlatformFee - totalDiscount;
     
     // Calculate total money saved for the patient (Difference between Market MRP and Final Cart Value)
     const marketSavings = totalMrp - finalTotal;
@@ -159,8 +205,48 @@ function updateBillingDisplay() {
     if (document.getElementById('bill-collection')) document.getElementById('bill-collection').innerText = `₹${activeCollectionFee.toFixed(2)}`;
     if (document.getElementById('bill-booking')) document.getElementById('bill-booking').innerText = `₹${activeBookingFee.toFixed(2)}`;
     if (document.getElementById('bill-platform')) document.getElementById('bill-platform').innerText = `₹${activePlatformFee.toFixed(2)}`;
-    if (document.getElementById('bill-discount')) document.getElementById('bill-discount').innerText = `-₹${discountAmount.toFixed(2)}`;
-    if (document.getElementById('bill-total')) document.getElementById('bill-total').innerText = `₹${finalTotal.toFixed(2)}`;
+    
+    // Render Auto Discount
+    const autoRow = document.getElementById('auto-discount-row');
+    if (autoRow) {
+        if (autoDiscountAmount > 0) {
+            autoRow.classList.remove('hidden');
+            document.getElementById('bill-auto-discount').innerText = `-₹${autoDiscountAmount.toFixed(2)}`;
+        } else {
+            autoRow.classList.add('hidden');
+        }
+    }
+
+    // Render Promo Discount
+    const promoRow = document.getElementById('promo-discount-row');
+    const applyBtn = document.getElementById('promo-apply-btn');
+    const removeBtn = document.getElementById('promo-remove-btn');
+    const promoInput = document.getElementById('promo-code-input');
+    
+    if (promoRow) {
+        if (promoDiscountAmount > 0) {
+            promoRow.classList.remove('hidden');
+            document.getElementById('bill-promo-discount').innerText = `-₹${promoDiscountAmount.toFixed(2)}`;
+            if (document.getElementById('active-promo-label')) document.getElementById('active-promo-label').innerText = `(${appliedPromoCodeStr})`;
+            
+            if (applyBtn) applyBtn.classList.add('hidden');
+            if (removeBtn) removeBtn.classList.remove('hidden');
+            if (promoInput) {
+                promoInput.disabled = true;
+                promoInput.classList.add('bg-brand-green/10', 'text-brand-green', 'border-brand-green/30');
+            }
+        } else {
+            promoRow.classList.add('hidden');
+            if (applyBtn) applyBtn.classList.remove('hidden');
+            if (removeBtn) removeBtn.classList.add('hidden');
+            if (promoInput) {
+                promoInput.disabled = false;
+                promoInput.classList.remove('bg-brand-green/10', 'text-brand-green', 'border-brand-green/30');
+            }
+        }
+    }
+
+    if (document.getElementById('bill-total')) document.getElementById('bill-total').innerText = `₹${Math.max(0, finalTotal).toFixed(2)}`;
     
     // Render the dynamic Savings Banner
     const savingsDisplay = document.getElementById('savings-display');
@@ -172,11 +258,3 @@ function updateBillingDisplay() {
         }
     }
 }
-
-// Add an event listener to trigger calculations immediately when a staff member types a discount %
-document.addEventListener('DOMContentLoaded', () => {
-    const discountInputEl = document.getElementById('discount-input');
-    if (discountInputEl) {
-        discountInputEl.addEventListener('input', updateBillingDisplay);
-    }
-});

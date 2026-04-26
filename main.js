@@ -9,17 +9,26 @@ let rateCard = [];          // Will hold all tests imported from data.js
 let navHistory = ['home'];  // Keeps track of the pages the user visited so the "Back" button works
 let userLocationLink = "";  // Stores the Google Maps link if they click "Pinpoint GPS"
 
-// --- Security Utility ---
+// --- Security & Utility Functions ---
+
 /**
  * Prevents Cross-Site Scripting (XSS) attacks.
- * If a user tries to type malicious code into the search bar or checkout forms,
- * this function neutralizes it by converting special characters into safe text.
  */
 function escapeHTML(str) {
     if (!str) return '';
     return String(str).replace(/[&<>'"]/g, match => {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
     });
+}
+
+/**
+ * Safely parses string prices (like "5,999") into numbers.
+ * We include this here so the UI can render safely even if billing.js is still loading.
+ */
+function safeParsePrice(priceString) {
+    if (!priceString) return 0;
+    const cleanString = priceString.toString().replace(/,/g, '');
+    return parseFloat(cleanString) || 0;
 }
 
 // =====================================================================
@@ -33,8 +42,9 @@ function toggleMobileMenu() {
     const menu = document.getElementById('mobile-menu');
     const menuIcon = document.getElementById('menu-icon');
     const closeIcon = document.getElementById('close-icon');
+    if(!menu || !menuIcon || !closeIcon) return;
+
     const isOpen = !menu.classList.contains('hidden');
-    
     menu.classList.toggle('hidden', isOpen);
     menuIcon.classList.toggle('hidden', !isOpen);
     closeIcon.classList.toggle('hidden', isOpen);
@@ -42,50 +52,46 @@ function toggleMobileMenu() {
 
 /**
  * The core Single Page Application (SPA) navigator.
- * Instead of loading a new HTML page, this hides all sections of the site
- * and only shows the one you requested (viewId).
  */
 function switchView(viewId, pushToHistory = true) {
-    // List of every possible "page" on the site
     const views = ['home-view', 'packages-page-view', 'contact-view', 'about-view', 'test-detail-view', 'privacy-view', 'terms-view', 'cart-view'];
     
-    // Hide all views by adding the 'view-hidden' CSS class
+    // Hide all views
     views.forEach(v => {
         const el = document.getElementById(v);
         if (el) el.classList.add('view-hidden');
     });
     
-    // Show the specific view requested
+    // Show target view
     const target = document.getElementById(viewId + '-view');
     if (target) {
         target.classList.remove('view-hidden');
-        if (pushToHistory) navHistory.push(viewId); // Save to history for the back button
-        window.scrollTo(0, 0); // Scroll to the top of the new "page"
+        if (pushToHistory) navHistory.push(viewId);
+        window.scrollTo(0, 0);
     }
 
-    // Auto-close mobile menu if it was open
+    // Auto-close mobile menu
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu && !mobileMenu.classList.contains('hidden')) toggleMobileMenu();
     
-    // If they opened the cart, trigger the billing.js update to refresh the view
+    // Manage Cart View state safely
     if (viewId === 'cart') {
         const emptyMsg = document.getElementById('empty-cart-msg');
         const cartContent = document.getElementById('cart-content');
         
-        // Use the global cartItems array managed in billing.js
         if (typeof cartItems !== 'undefined') {
             if (cartItems.length === 0) {
-                emptyMsg.classList.remove('hidden');
-                cartContent.classList.add('hidden');
+                if(emptyMsg) emptyMsg.classList.remove('hidden');
+                if(cartContent) cartContent.classList.add('hidden');
             } else {
-                emptyMsg.classList.add('hidden');
-                cartContent.classList.remove('hidden');
-                updateBillingDisplay(); // Call the unified rendering function in billing.js
+                if(emptyMsg) emptyMsg.classList.add('hidden');
+                if(cartContent) cartContent.classList.remove('hidden');
+                if (typeof updateBillingDisplay === 'function') updateBillingDisplay(); 
             }
         }
     }
     
-    // Hide the floating WhatsApp button if they are in the cart or test details (to avoid clutter)
+    // Toggle floating WhatsApp button visibility
     const globalWa = document.getElementById('global-wa-btn');
     if (globalWa) {
         if (viewId === 'test-detail' || viewId === 'cart') {
@@ -97,7 +103,7 @@ function switchView(viewId, pushToHistory = true) {
 }
 
 /**
- * Goes back to the previous "page" the user was looking at.
+ * Handles the "Back" button logic.
  */
 function goBack() {
     if (navHistory.length > 1) {
@@ -110,46 +116,59 @@ function goBack() {
 }
 
 // =====================================================================
-// CHECKOUT & GPS INTEGRATION
+// CART PROXY FUNCTION
 // =====================================================================
 
 /**
- * UX Function: Checks the pincode as the user types.
- * Turns the box red and disables the checkout button if out of bounds.
+ * A safe bridge between the HTML buttons and the billing.js logic.
+ * It prevents the UI from crashing if a button is clicked too early.
  */
+function addToCartById(testId) {
+    const testObj = rateCard.find(t => t.id === testId);
+    if (testObj) {
+        if (typeof addToCart === 'function') {
+            addToCart(testObj);
+        } else {
+            console.error("Cart system is not ready yet.");
+            alert("Our cart system is currently loading, please try again in a second.");
+        }
+    }
+}
+
+// =====================================================================
+// CHECKOUT & GPS INTEGRATION
+// =====================================================================
+
 function checkPincode() {
     const input = document.getElementById('checkout-pincode');
     const errorMsg = document.getElementById('pincode-error');
     const checkoutBtn = document.getElementById('checkout-btn');
-    const val = input ? input.value.trim() : "";
+    if(!input) return;
+    
+    const val = input.value.trim();
 
-    // Fallback if BILLING_CONFIG isn't loaded properly
     if (typeof BILLING_CONFIG === 'undefined' || !BILLING_CONFIG.serviceablePincodes) return;
 
-    // Only check once they've typed all 6 digits
     if (val.length === 6) {
         if (BILLING_CONFIG.serviceablePincodes.includes(val)) {
-            // Success State: Pincode is in the serviceable list
             input.classList.remove('border-red-500', 'text-red-500');
             input.classList.add('border-brand-green', 'text-brand-green');
-            errorMsg.classList.add('hidden');
+            if(errorMsg) errorMsg.classList.add('hidden');
             if (checkoutBtn) {
                 checkoutBtn.disabled = false;
                 checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         } else {
-            // Failure State: Pincode is not serviceable
             input.classList.remove('border-brand-green', 'text-brand-green');
             input.classList.add('border-red-500', 'text-red-500');
-            errorMsg.classList.remove('hidden');
+            if(errorMsg) errorMsg.classList.remove('hidden');
             if (checkoutBtn) {
-                checkoutBtn.disabled = true; // Lock the button from being clicked
+                checkoutBtn.disabled = true; 
                 checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
         }
     } else {
-        // Reset state while they are typing (less than 6 digits)
-        if(input) input.classList.remove('border-red-500', 'text-red-500', 'border-brand-green', 'text-brand-green');
+        input.classList.remove('border-red-500', 'text-red-500', 'border-brand-green', 'text-brand-green');
         if(errorMsg) errorMsg.classList.add('hidden');
         if (checkoutBtn) {
             checkoutBtn.disabled = false;
@@ -158,11 +177,10 @@ function checkPincode() {
     }
 }
 
-/**
- * Accesses the user's phone/browser GPS to pinpoint their location for home collection.
- */
 function locateUser() {
     const statusEl = document.getElementById('location-status');
+    if(!statusEl) return;
+    
     statusEl.innerText = "Locating (Please allow permissions)...";
     statusEl.className = "text-xs font-semibold text-brand-blue italic";
 
@@ -172,12 +190,10 @@ function locateUser() {
         navigator.geolocation.getCurrentPosition(position => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            // Create a usable Google Maps URL
             userLocationLink = `https://maps.google.com/?q=${lat},${lng}`;
             statusEl.innerText = "GPS Location Pinned Successfully! ✓";
             statusEl.className = "text-xs font-black uppercase tracking-widest text-brand-green mt-1";
         }, error => {
-            // Handle cases where the user denies GPS permissions
             console.error("GPS Error:", error);
             let errorMsg = "GPS Error. Please type your address manually.";
             if (error.code === 1) errorMsg = "GPS Access Denied. Please type your address manually.";
@@ -192,18 +208,10 @@ function locateUser() {
     }
 }
 
-/**
- * The final Checkout Action.
- * 1. Validates the form.
- * 2. Compiles WhatsApp Message string.
- * 3. Dispatches data silently to Google Sheets via Forms.
- * 4. Opens WhatsApp.
- */
 async function proceedToWhatsApp() {
-    // Make sure we have tests in the cart managed by billing.js
     if (typeof cartItems === 'undefined' || cartItems.length === 0) return;
 
-    // 1. Gather all inputs
+    // Gather inputs
     const nameEl = document.getElementById('checkout-name');
     const ageEl = document.getElementById('checkout-age');
     const genderEl = document.getElementById('checkout-gender');
@@ -212,47 +220,47 @@ async function proceedToWhatsApp() {
     const pincodeEl = document.getElementById('checkout-pincode'); 
     const addressEl = document.getElementById('checkout-address');
 
-    const name = nameEl.value.trim();
-    const age = ageEl.value.trim();
-    const gender = genderEl.value;
-    const mobile = mobileEl.value.trim();
-    const email = emailEl.value.trim();
+    const name = nameEl ? nameEl.value.trim() : "";
+    const age = ageEl ? ageEl.value.trim() : "";
+    const gender = genderEl ? genderEl.value : "";
+    const mobile = mobileEl ? mobileEl.value.trim() : "";
+    const email = emailEl ? emailEl.value.trim() : "";
     const pincode = pincodeEl ? pincodeEl.value.trim() : ""; 
-    const address = addressEl.value.trim();
+    const address = addressEl ? addressEl.value.trim() : "";
 
-    // 2. Reset previous validation red borders
+    // Reset red borders
     [nameEl, ageEl, genderEl, mobileEl, pincodeEl, addressEl].forEach(el => {
         if (el) el.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
     });
 
-    // 3. Validation Rules
+    // Validation
     let missingFields = [];
-    if (!name) { missingFields.push("Full Name"); nameEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
-    if (!age) { missingFields.push("Age"); ageEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
-    if (!gender) { missingFields.push("Gender"); genderEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
-    if (!mobile) { missingFields.push("Mobile Number"); mobileEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
+    if (!name) { missingFields.push("Full Name"); if(nameEl) nameEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
+    if (!age) { missingFields.push("Age"); if(ageEl) ageEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
+    if (!gender) { missingFields.push("Gender"); if(genderEl) genderEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
+    if (!mobile) { missingFields.push("Mobile Number"); if(mobileEl) mobileEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
     
-    // Pincode Hard Gate Validation 
     if (typeof BILLING_CONFIG !== 'undefined' && BILLING_CONFIG.serviceablePincodes) {
         if (!pincode || pincode.length !== 6) { 
             missingFields.push("Valid 6-Digit Pincode"); 
             if(pincodeEl) pincodeEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); 
         } else if (!BILLING_CONFIG.serviceablePincodes.includes(pincode)) {
-            // Stops the checkout dead in its tracks if they bypass the UI somehow
             alert("We apologize, but Winpath Diagnostics currently does not offer home collection services at pincode " + pincode + ". Please contact us directly for alternative arrangements.");
-            return; // HARD STOP
+            return;
         }
     }
 
-    // User must provide EITHER a typed address OR a GPS link
-    if (!address && !userLocationLink) { missingFields.push("Home Collection Address (or GPS Location)"); addressEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
+    if (!address && !userLocationLink) { 
+        missingFields.push("Home Collection Address (or GPS Location)"); 
+        if(addressEl) addressEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); 
+    }
 
     if (missingFields.length > 0) {
         alert("Please fill out the following mandatory fields:\n\n- " + missingFields.join("\n- "));
         return;
     }
 
-    // 4. Build the WhatsApp Message string
+    // Build WhatsApp Message
     let message = `*NEW HOME COLLECTION BOOKING*\n\n`;
     message += `*Customer Details:*\n`;
     message += `Name: ${name}\n`;
@@ -269,12 +277,11 @@ async function proceedToWhatsApp() {
     
     cartItems.forEach((item, index) => {
         message += `${index + 1}. ${item.name} (₹${item.price})\n`;
-        const p = parsePrice(item.price);
+        const p = safeParsePrice(item.price);
         subtotal += p;
         if (!item.isPackage) standaloneSubtotal += p;
     });
 
-    // Apply exact same math logic as billing.js updateBillingDisplay()
     let config = typeof BILLING_CONFIG !== 'undefined' ? BILLING_CONFIG : { homeCollectionFee: 0, bookingFee: 0, platformFee: 0 };
     
     let autoDiscountAmount = standaloneSubtotal > 1000 ? (standaloneSubtotal * 10) / 100 : 0;
@@ -299,20 +306,22 @@ async function proceedToWhatsApp() {
     
     message += `*Total Amount: ₹${Math.max(0, total).toFixed(2)}*`;
 
-    // 5. Visual loading state on the button
+    // Visual Loading State
     const checkoutBtn = document.getElementById('checkout-btn');
-    const originalBtnText = checkoutBtn.innerText;
-    checkoutBtn.innerText = "Processing Details...";
-    checkoutBtn.disabled = true;
+    const originalBtnText = checkoutBtn ? checkoutBtn.innerText : "Proceed";
+    if(checkoutBtn) {
+        checkoutBtn.innerText = "Processing Details...";
+        checkoutBtn.disabled = true;
+    }
 
-    // 6. Google Sheets Dispatch
+    // Google Sheets Dispatch
     const customerData = {
         name: name,
         age: age,
         gender: gender,
         mobile: mobile,
         email: email || "N/A",
-        address: (pincode ? `[${pincode}] ` : '') + (address || "N/A"), // Prepends pincode to address string sent to Sheets
+        address: (pincode ? `[${pincode}] ` : '') + (address || "N/A"),
         gpsLink: userLocationLink || "N/A",
         tests: cartItems.map(item => item.name).join(", "),
         totalAmount: Math.max(0, Math.round(total)),
@@ -320,17 +329,16 @@ async function proceedToWhatsApp() {
     };
 
     if (typeof recordPatientDetails === 'function') {
-        await recordPatientDetails(customerData); 
+        try { await recordPatientDetails(customerData); } catch(e) { console.error("Sheet Sync Failed", e); }
     }
     
-    checkoutBtn.innerText = originalBtnText;
-    checkoutBtn.disabled = false;
+    if(checkoutBtn) {
+        checkoutBtn.innerText = originalBtnText;
+        checkoutBtn.disabled = false;
+    }
 
-    // 7. Format the string for URLs and open WhatsApp in a new tab
     const encodedMessage = encodeURIComponent(message);
     const waUrl = `https://wa.me/919380116362?text=${encodedMessage}`;
-    
-    // NOTE: Cart persistence is active! We do NOT clear the cartItems array here.
     window.open(waUrl, '_blank', 'noopener,noreferrer');
 }
 
@@ -338,32 +346,29 @@ async function proceedToWhatsApp() {
 // CATALOG LOGIC & RENDERING
 // =====================================================================
 
-/**
- * Filter triggered by the Mega Menu dropdowns.
- */
 function filterByCategory(type, value) {
     switchView('packages-page');
-    // Update headers based on the chosen category
-    document.getElementById('menu-title').innerHTML = `${escapeHTML(value)} <span class="brand-gradient-text italic">Tests.</span>`;
-    document.getElementById('menu-subtitle').innerText = `Browsing specialized screenings for ${escapeHTML(value)}`;
-    document.getElementById('clear-btn').classList.remove('hidden');
+    const titleEl = document.getElementById('menu-title');
+    const subEl = document.getElementById('menu-subtitle');
+    const clearBtn = document.getElementById('clear-btn');
     
-    // Filter the global rateCard
+    if(titleEl) titleEl.innerHTML = `${escapeHTML(value)} <span class="brand-gradient-text italic">Tests.</span>`;
+    if(subEl) subEl.innerText = `Browsing specialized screenings for ${escapeHTML(value)}`;
+    if(clearBtn) clearBtn.classList.remove('hidden');
+    
     const filtered = rateCard.filter(t => t.category && t.category[type] === value);
     renderTests(filtered);
     clearSearchInput(false); 
 }
 
 let searchTimeout;
-/**
- * Triggers every time the user types a letter in the search bar.
- * Uses a 'debounce' timeout so it doesn't try to search 100 times a second.
- */
 function handleSearchInput() {
     const input = document.getElementById('test-search');
     const clearBtn = document.getElementById('search-clear-icon');
-    if (input.value.length > 0) clearBtn.classList.remove('hidden');
-    else clearBtn.classList.add('hidden');
+    if(!input) return;
+
+    if (input.value.length > 0 && clearBtn) clearBtn.classList.remove('hidden');
+    else if (clearBtn) clearBtn.classList.add('hidden');
     
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => { filterTests(); }, 300);
@@ -371,44 +376,43 @@ function handleSearchInput() {
 
 function clearSearchInput(executeFilter = true) {
     const input = document.getElementById('test-search');
-    input.value = '';
-    document.getElementById('search-clear-icon').classList.add('hidden');
+    const clearBtn = document.getElementById('search-clear-icon');
+    if(input) input.value = '';
+    if(clearBtn) clearBtn.classList.add('hidden');
     if (executeFilter) filterTests();
 }
 
-/**
- * Takes the user's search text, sanitizes it, and looks for matches in the test names or parameters.
- */
 function filterTests() {
-    const rawQuery = document.getElementById('test-search').value.toLowerCase();
-    const query = rawQuery.replace(/[^a-z0-9\s-]/g, ''); // Remove weird characters
+    const searchEl = document.getElementById('test-search');
+    if(!searchEl) return;
+
+    const rawQuery = searchEl.value.toLowerCase();
+    const query = rawQuery.replace(/[^a-z0-9\s-]/g, ''); 
     
     if(query === "") { 
-        // If search is empty, just show the first 18 tests
         renderTests(rateCard.slice(0, 18)); 
     } else { 
         renderTests(rateCard.filter(t => t.name.toLowerCase().includes(query) || (t.params && t.params.toLowerCase().includes(query)))); 
     }
 }
 
-/**
- * Resets the catalog view back to normal after a filter was applied.
- */
 function clearFilter() {
     clearSearchInput(false);
-    document.getElementById('clear-btn').classList.add('hidden');
-    document.getElementById('menu-title').innerHTML = `Test <span class="brand-gradient-text italic">Menu.</span>`;
-    document.getElementById('menu-subtitle').innerText = "Browsing 100+ clinical investigations";
+    const clearBtn = document.getElementById('clear-btn');
+    const titleEl = document.getElementById('menu-title');
+    const subEl = document.getElementById('menu-subtitle');
+
+    if(clearBtn) clearBtn.classList.add('hidden');
+    if(titleEl) titleEl.innerHTML = `Test <span class="brand-gradient-text italic">Menu.</span>`;
+    if(subEl) subEl.innerText = "Browsing 100+ clinical investigations";
     filterTests();
 }
 
-/**
- * Changes the view to the Test Details page and injects the specific test's information.
- */
 function showTestDetail(testId) {
     const test = rateCard.find(t => t.id === testId);
     if (!test) return;
     const content = document.getElementById('detail-content');
+    if(!content) return;
 
     const safeName = escapeHTML(test.name);
     const safePrice = escapeHTML(test.price);
@@ -416,10 +420,8 @@ function showTestDetail(testId) {
     const safeImportance = escapeHTML(test.importance);
     const safeParams = escapeHTML(test.params);
     
-    // Calculate if there is a discount to show the MRP
-    const hasDiscount = parsePrice(test.mrp) > parsePrice(test.price);
+    const hasDiscount = safeParsePrice(test.mrp) > safeParsePrice(test.price);
 
-    // Packages have a different layout than standalone tests
     let bodyHtml = test.isPackage ? `
             <div class="space-y-12">
                 <div>
@@ -439,17 +441,15 @@ function showTestDetail(testId) {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div class="lg:col-span-2">${bodyHtml}</div>
                 <div class="hidden lg:block">
-                    <!-- Sticky pricing box on desktop -->
                     <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 sticky top-32">
                         <div class="text-[9px] font-black text-gray-400 uppercase mb-2">Service Fee</div>
                         ${hasDiscount ? `<div class="text-lg font-bold text-gray-400 line-through tracking-tight">MRP ₹${safeMrp}</div>` : ''}
                         <div class="text-5xl font-black brand-gradient-text tracking-tighter mb-8">₹${safePrice}</div>
-                        <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(test.id)}'))" class="block w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-xl hover:scale-[1.02] active:scale-95 transition-all">Add to Cart</button>
+                        <button onclick="addToCartById('${escapeHTML(test.id)}')" class="block w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-xl hover:scale-[1.02] active:scale-95 transition-all">Add to Cart</button>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Sticky pricing bar on mobile at the bottom of the screen -->
         <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-200 p-6 pb-8 z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[2rem] flex justify-between items-center">
             <div>
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Service Fee</p>
@@ -458,31 +458,26 @@ function showTestDetail(testId) {
                     ${hasDiscount ? `<div class="text-sm font-bold text-gray-400 line-through">₹${safeMrp}</div>` : ''}
                 </div>
             </div>
-            <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(test.id)}'))" class="px-8 py-4 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Add to Cart</button>
+            <button onclick="addToCartById('${escapeHTML(test.id)}')" class="px-8 py-4 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Add to Cart</button>
         </div>
     `;
     switchView('test-detail');
 }
 
-/**
- * Loops through a given array of tests and generates the clickable HTML cards for the catalog.
- */
 function renderTests(tests) {
     const container = document.getElementById('test-results');
+    if(!container) return;
     
-    // Empty state message
     container.innerHTML = tests.length > 0 ? '' : '<p class="col-span-full py-20 text-center font-bold text-gray-400">No clinical parameters matched your search</p>';
     
-    // Sort packages to appear before standalone tests
     const sorted = [...tests].sort((a,b) => (b.isPackage ? 1 : 0) - (a.isPackage ? 1 : 0));
     
     sorted.forEach(test => {
         const card = document.createElement('div');
         const isPkg = test.isPackage;
-        const hasDiscount = parsePrice(test.mrp) > parsePrice(test.price);
+        const hasDiscount = safeParsePrice(test.mrp) > safeParsePrice(test.price);
         const safeMrp = escapeHTML(test.mrp || test.price);
 
-        // Packages get a slight blue background to stand out
         card.className = `test-card p-8 rounded-[2.5rem] shadow-sm flex flex-col h-full ${isPkg ? 'bg-brand-blue/5 border-brand-blue/20' : 'bg-white'}`;
         card.innerHTML = `
             <div class="flex justify-between items-start mb-6 cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')">
@@ -493,31 +488,26 @@ function renderTests(tests) {
                 </div>
             </div>
             ${isPkg ? `<p class="text-[10px] text-brand-blue font-black uppercase tracking-widest mb-4 text-left">Health Package</p><div class="bg-gray-50/80 p-5 rounded-2xl flex-grow mb-6 text-left cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')"><p class="text-[10px] text-gray-600 font-semibold italic line-clamp-2">${escapeHTML(test.params)}</p></div>` : `<div class="flex-grow cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')"></div>`}
-            <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(test.id)}'))" class="w-full py-3 mt-4 bg-brand-cyan/10 text-brand-blue hover:bg-brand-blue hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors">Add to Cart</button>
+            <button onclick="addToCartById('${escapeHTML(test.id)}')" class="w-full py-3 mt-4 bg-brand-cyan/10 text-brand-blue hover:bg-brand-blue hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors">Add to Cart</button>
         `;
         container.appendChild(card);
     });
 }
 
-/**
- * Pulls specific packages (by ID) from the rateCard and displays them on the Home Page.
- */
 function populateFeaturedPackages() {
     const container = document.getElementById('featured-packages-grid');
     if(!container) return;
     container.innerHTML = "";
     
-    // Hardcoded IDs of the packages you want to feature on the homepage
     const featuredIds = ['p-3', 'p-4', 'p-5', 'p-2']; 
     
     featuredIds.forEach(id => {
         const pkg = rateCard.find(t => t.id === id);
         if(pkg) {
-            const hasDiscount = parsePrice(pkg.mrp) > parsePrice(pkg.price);
+            const hasDiscount = safeParsePrice(pkg.mrp) > safeParsePrice(pkg.price);
             const safeMrp = escapeHTML(pkg.mrp || pkg.price);
 
             const card = document.createElement('div');
-            // Give 'p-5' a special "Most Popular" glow and scale
             card.className = `bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-xl transition-all ${id==='p-5' ? 'transform scale-[1.03] z-10 border-2 border-brand-cyan/20 shadow-2xl relative' : ''}`;
             let badgeHtml = id === 'p-5' ? `<div class="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 brand-gradient-bg rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-lg">Most Popular</div>` : '';
             card.innerHTML = `
@@ -531,7 +521,7 @@ function populateFeaturedPackages() {
                     </div>
                 </div>
                 <div class="mt-auto">
-                    <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(pkg.id)}'))" class="w-full py-4 ${id==='p-5' ? 'brand-gradient-bg text-white shadow-xl hover:scale-[1.02]' : 'bg-gray-50 text-brand-blue hover:bg-gray-100'} text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all">Add to Cart</button>
+                    <button onclick="addToCartById('${escapeHTML(pkg.id)}')" class="w-full py-4 ${id==='p-5' ? 'brand-gradient-bg text-white shadow-xl hover:scale-[1.02]' : 'bg-gray-50 text-brand-blue hover:bg-gray-100'} text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all">Add to Cart</button>
                 </div>
             `;
             container.appendChild(card);
@@ -539,9 +529,6 @@ function populateFeaturedPackages() {
     });
 }
 
-/**
- * Renders the timeline on the "About Us" page from the data.js file.
- */
 function renderRoadmap() {
     const container = document.getElementById('roadmap-container');
     if (!container) return;
@@ -566,16 +553,24 @@ function renderRoadmap() {
     }
 }
 
-/**
- * Executed automatically when the browser finishes loading the website.
- */
-window.onload = () => { 
-    // Combine arrays from data.js into one master list
-    if (typeof healthPackages !== 'undefined' && typeof investigations !== 'undefined') {
-        rateCard = [...healthPackages, ...investigations];
+// =====================================================================
+// INITIALIZATION
+// =====================================================================
+
+document.addEventListener('DOMContentLoaded', () => { 
+    // Safely load the test databases
+    try {
+        if (typeof healthPackages !== 'undefined' && typeof investigations !== 'undefined') {
+            rateCard = [...healthPackages, ...investigations];
+        } else {
+            console.error("WARNING: data.js arrays (healthPackages/investigations) are missing or not loaded yet.");
+        }
+    } catch(e) {
+        console.error("Error loading rateCard", e);
     }
-    // Initialize the UI
-    filterTests(); 
-    renderRoadmap(); 
-    populateFeaturedPackages();
-};
+    
+    // Safely initialize each distinct UI block
+    try { filterTests(); } catch(e) { console.error("Error rendering Test List:", e); }
+    try { renderRoadmap(); } catch(e) { console.error("Error rendering Roadmap:", e); }
+    try { populateFeaturedPackages(); } catch(e) { console.error("Error rendering Featured Packages:", e); }
+});

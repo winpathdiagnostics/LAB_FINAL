@@ -2,17 +2,12 @@
 // MAIN APPLICATION LOGIC (Navigation, Cart, Catalog, & Checkout)
 // =====================================================================
 // This file acts as the "brain" of your website. It controls how pages change,
-// handles the math for the shopping cart, and processes the final checkout.
+// handles the search functionality, and processes the final checkout string.
 
 // --- Global State Variables ---
 let rateCard = [];          // Will hold all tests imported from data.js
 let navHistory = ['home'];  // Keeps track of the pages the user visited so the "Back" button works
-let shoppingCart = [];      // Array to hold the tests the user wants to book
 let userLocationLink = "";  // Stores the Google Maps link if they click "Pinpoint GPS"
-
-// --- Promo Code State ---
-let appliedDiscountPercentage = 0; // Currently active discount percentage (e.g., 20)
-let appliedPromoCode = "";         // Currently active discount code text (e.g., "WINPATH20")
 
 // --- Security Utility ---
 /**
@@ -72,8 +67,23 @@ function switchView(viewId, pushToHistory = true) {
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu && !mobileMenu.classList.contains('hidden')) toggleMobileMenu();
     
-    // If they opened the cart, calculate the math right away
-    if (viewId === 'cart') renderCartView();
+    // If they opened the cart, trigger the billing.js update to refresh the view
+    if (viewId === 'cart') {
+        const emptyMsg = document.getElementById('empty-cart-msg');
+        const cartContent = document.getElementById('cart-content');
+        
+        // Use the global cartItems array managed in billing.js
+        if (typeof cartItems !== 'undefined') {
+            if (cartItems.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                cartContent.classList.add('hidden');
+            } else {
+                emptyMsg.classList.add('hidden');
+                cartContent.classList.remove('hidden');
+                updateBillingDisplay(); // Call the unified rendering function in billing.js
+            }
+        }
+    }
     
     // Hide the floating WhatsApp button if they are in the cart or test details (to avoid clutter)
     const globalWa = document.getElementById('global-wa-btn');
@@ -99,189 +109,6 @@ function goBack() {
     }
 }
 
-// =====================================================================
-// SHOPPING CART & PROMO FUNCTIONS
-// =====================================================================
-
-/**
- * Adds a test to the cart if it isn't already there.
- */
-function addToCart(testId) {
-    const test = rateCard.find(t => t.id === testId);
-    if (test && !shoppingCart.some(item => item.id === testId)) {
-        shoppingCart.push(test);
-        updateCartBadge();
-        showToast(); // Show "Added to Cart" popup
-    }
-}
-
-/**
- * Removes a test from the cart and updates the math.
- */
-function removeFromCart(testId) {
-    shoppingCart = shoppingCart.filter(item => item.id !== testId);
-    updateCartBadge();
-    renderCartView(); 
-}
-
-/**
- * Updates the red notification bubble numbers on the cart icons.
- */
-function updateCartBadge() {
-    const count = shoppingCart.length;
-    const badges = document.querySelectorAll('#cart-badge');
-    badges.forEach(b => b.innerText = count);
-    const mobileBadge = document.getElementById('mobile-cart-count');
-    if(mobileBadge) mobileBadge.innerText = count;
-}
-
-/**
- * Triggers the small "Added to Cart" banner animation.
- */
-function showToast() {
-    const toast = document.getElementById('toast');
-    toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 2500); 
-}
-
-/**
- * Checks the user's promo code against the BILLING_CONFIG dictionary.
- */
-function applyPromoCode() {
-    const input = document.getElementById('promo-code-input');
-    const code = input.value.trim().toUpperCase();
-    
-    if (!code) return;
-
-    // Check if billing.js is loaded AND if the code exists in the validDiscountCodes dictionary
-    if (typeof BILLING_CONFIG !== 'undefined' && BILLING_CONFIG.validDiscountCodes[code]) {
-        appliedDiscountPercentage = BILLING_CONFIG.validDiscountCodes[code];
-        appliedPromoCode = code;
-        alert(`Success! ${appliedDiscountPercentage}% discount applied.`);
-    } else {
-        appliedDiscountPercentage = 0;
-        appliedPromoCode = "";
-        alert("Invalid or expired discount code.");
-        input.value = "";
-    }
-    
-    // Re-render the cart so the new discount applies to the math immediately
-    renderCartView(); 
-}
-
-/**
- * Removes the currently applied promo code and resets the cart math.
- */
-function removePromoCode() {
-    appliedDiscountPercentage = 0;
-    appliedPromoCode = "";
-    
-    const input = document.getElementById('promo-code-input');
-    if (input) {
-        input.value = "";
-    }
-    
-    renderCartView();
-}
-
-/**
- * Dynamically builds the HTML for the Cart View and performs all billing math.
- */
-function renderCartView() {
-    const emptyMsg = document.getElementById('empty-cart-msg');
-    const cartContent = document.getElementById('cart-content');
-    const itemList = document.getElementById('cart-items-list');
-
-    // Show empty state if cart array is empty
-    if (shoppingCart.length === 0) {
-        emptyMsg.classList.remove('hidden');
-        cartContent.classList.add('hidden');
-    } else {
-        emptyMsg.classList.add('hidden');
-        cartContent.classList.remove('hidden');
-
-        itemList.innerHTML = '';
-        let subtotal = 0;
-
-        // Loop through everything in the cart
-        shoppingCart.forEach(item => {
-            // Remove commas from prices like "5,999" so JavaScript can do math on them
-            const priceNum = parseInt(item.price.replace(/,/g, ''));
-            subtotal += priceNum;
-            
-            // Build the HTML list item for the cart
-            itemList.innerHTML += `
-                <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <div>
-                        <h4 class="font-black text-sm text-gray-900">${escapeHTML(item.name)}</h4>
-                        <span class="text-xs font-bold text-brand-blue uppercase tracking-widest">₹${escapeHTML(item.price)}</span>
-                    </div>
-                    <button onclick="removeFromCart('${escapeHTML(item.id)}')" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                </div>
-            `;
-        });
-
-        // --- BILLING MATH ---
-        // Fallback to zero if billing.js is somehow missing
-        let config = typeof BILLING_CONFIG !== 'undefined' ? BILLING_CONFIG : { homeCollectionFee: 0, bookingFee: 0, platformFee: 0 };
-        
-        // Calculate dynamic values
-        const discountVal = (subtotal * appliedDiscountPercentage) / 100;
-        const totalFees = config.homeCollectionFee + config.bookingFee + config.platformFee;
-        const total = subtotal + totalFees - discountVal;
-        
-        // Update HTML interface numbers
-        document.getElementById('bill-subtotal').innerText = `₹${subtotal.toLocaleString()}`;
-        document.getElementById('bill-collection').innerText = `₹${config.homeCollectionFee}`;
-        
-        const bookingEl = document.getElementById('bill-booking');
-        if(bookingEl) bookingEl.innerText = `₹${config.bookingFee}`;
-        
-        const platformEl = document.getElementById('bill-platform');
-        if(platformEl) platformEl.innerText = `₹${config.platformFee}`;
-        
-        const discountEl = document.getElementById('bill-discount');
-        const promoLabel = document.getElementById('active-promo-label');
-        
-        // --- UI Elements for Promo Toggle ---
-        const promoInput = document.getElementById('promo-code-input');
-        const applyBtn = document.getElementById('promo-apply-btn');
-        const removeBtn = document.getElementById('promo-remove-btn');
-        
-        // If there is an active discount, show it in green. Otherwise, show ₹0.
-        if (appliedDiscountPercentage > 0 && subtotal > 0) {
-            discountEl.innerText = `-₹${Math.round(discountVal).toLocaleString()}`;
-            if(promoLabel) promoLabel.innerText = `(${appliedPromoCode})`;
-            discountEl.classList.add('text-brand-green');
-            
-            // Lock input, turn it green, and show "Cancel" button
-            if (applyBtn) applyBtn.classList.add('hidden');
-            if (removeBtn) removeBtn.classList.remove('hidden');
-            if (promoInput) {
-                promoInput.value = appliedPromoCode;
-                promoInput.disabled = true;
-                promoInput.classList.add('bg-brand-green/10', 'text-brand-green', 'border-brand-green/30');
-            }
-        } else {
-            discountEl.innerText = `₹0`;
-            if(promoLabel) promoLabel.innerText = "";
-            discountEl.classList.remove('text-brand-green');
-            
-            // Unlock input, remove green styling, and show "Apply" button
-            if (applyBtn) applyBtn.classList.remove('hidden');
-            if (removeBtn) removeBtn.classList.add('hidden');
-            if (promoInput) {
-                promoInput.disabled = false;
-                promoInput.classList.remove('bg-brand-green/10', 'text-brand-green', 'border-brand-green/30');
-            }
-        }
-
-        // Final total (Math.max ensures the total never goes below 0)
-        document.getElementById('bill-total').innerText = `₹${Math.max(0, Math.round(total)).toLocaleString()}`;
-    }
-}
 
 // =====================================================================
 // CHECKOUT & GPS INTEGRATION
@@ -374,22 +201,27 @@ function locateUser() {
  * 4. Opens WhatsApp.
  */
 async function proceedToWhatsApp() {
+    // Make sure we have tests in the cart managed by billing.js
+    if (typeof cartItems === 'undefined' || cartItems.length === 0) return;
+
     // 1. Gather all inputs
     const nameEl = document.getElementById('checkout-name');
     const ageEl = document.getElementById('checkout-age');
     const genderEl = document.getElementById('checkout-gender');
     const mobileEl = document.getElementById('checkout-mobile');
     const emailEl = document.getElementById('checkout-email');
-    const pincodeEl = document.getElementById('checkout-pincode'); // The new pincode element
+    const pincodeEl = document.getElementById('checkout-pincode'); 
     const addressEl = document.getElementById('checkout-address');
+    const discountInputEl = document.getElementById('discount-input'); // New Custom Discount Input
 
     const name = nameEl.value.trim();
     const age = ageEl.value.trim();
     const gender = genderEl.value;
     const mobile = mobileEl.value.trim();
     const email = emailEl.value.trim();
-    const pincode = pincodeEl ? pincodeEl.value.trim() : ""; // Extract pincode text
+    const pincode = pincodeEl ? pincodeEl.value.trim() : ""; 
     const address = addressEl.value.trim();
+    const appliedDiscountPercentage = discountInputEl ? (parseFloat(discountInputEl.value) || 0) : 0;
 
     // 2. Reset previous validation red borders
     [nameEl, ageEl, genderEl, mobileEl, pincodeEl, addressEl].forEach(el => {
@@ -403,7 +235,7 @@ async function proceedToWhatsApp() {
     if (!gender) { missingFields.push("Gender"); genderEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
     if (!mobile) { missingFields.push("Mobile Number"); mobileEl.classList.add('border-red-500', 'ring-2', 'ring-red-500'); }
     
-    // NEW: Pincode Hard Gate Validation 
+    // Pincode Hard Gate Validation 
     if (typeof BILLING_CONFIG !== 'undefined' && BILLING_CONFIG.serviceablePincodes) {
         if (!pincode || pincode.length !== 6) { 
             missingFields.push("Valid 6-Digit Pincode"); 
@@ -430,20 +262,21 @@ async function proceedToWhatsApp() {
     message += `Age: ${age} Yrs | Gender: ${gender}\n`;
     message += `Mobile: ${mobile}\n`;
     if (email) message += `Email: ${email}\n`;
-    message += `Pincode: ${pincode}\n`; // Append Pincode to WhatsApp msg
+    message += `Pincode: ${pincode}\n`; 
     if (userLocationLink) message += `GPS Link: ${userLocationLink}\n`;
     if (address) message += `Address Note: ${address}\n\n`;
 
     message += `*Selected Tests:*\n`;
     let subtotal = 0;
-    shoppingCart.forEach((item, index) => {
+    cartItems.forEach((item, index) => {
         message += `${index + 1}. ${item.name} (₹${item.price})\n`;
-        subtotal += parseInt(item.price.replace(/,/g, ''));
+        subtotal += parsePrice(item.price);
     });
 
-    // Apply exact same math logic as renderCartView()
+    // Apply exact same math logic as billing.js updateBillingDisplay()
     let config = typeof BILLING_CONFIG !== 'undefined' ? BILLING_CONFIG : { homeCollectionFee: 0, bookingFee: 0, platformFee: 0 };
-    const discountVal = (subtotal * appliedDiscountPercentage) / 100;
+    const safeDiscountPercentage = Math.min(Math.max(appliedDiscountPercentage, 0), 100);
+    const discountVal = (subtotal * safeDiscountPercentage) / 100;
     const totalFees = config.homeCollectionFee + config.bookingFee + config.platformFee;
     const total = subtotal + totalFees - discountVal;
 
@@ -453,11 +286,11 @@ async function proceedToWhatsApp() {
     if (config.bookingFee > 0) message += `Booking Fee: ₹${config.bookingFee}\n`;
     if (config.platformFee > 0) message += `Platform Fee: ₹${config.platformFee}\n`;
     
-    if (appliedDiscountPercentage > 0 && subtotal > 0) {
-        message += `Discount Applied (*${appliedPromoCode}*): -₹${Math.round(discountVal).toLocaleString()}\n`;
+    if (safeDiscountPercentage > 0 && subtotal > 0) {
+        message += `Custom Discount (${safeDiscountPercentage}%): -₹${discountVal.toFixed(2)}\n`;
     }
     
-    message += `*Total Amount: ₹${Math.max(0, Math.round(total)).toLocaleString()}*`;
+    message += `*Total Amount: ₹${Math.max(0, total).toFixed(2)}*`;
 
     // 5. Visual loading state on the button
     const checkoutBtn = document.getElementById('checkout-btn');
@@ -475,9 +308,9 @@ async function proceedToWhatsApp() {
         email: email || "N/A",
         address: (pincode ? `[${pincode}] ` : '') + (address || "N/A"), // Prepends pincode to address string sent to Sheets
         gpsLink: userLocationLink || "N/A",
-        tests: shoppingCart.map(item => item.name).join(", "),
+        tests: cartItems.map(item => item.name).join(", "),
         totalAmount: Math.max(0, Math.round(total)),
-        promoCode: appliedPromoCode || "None" 
+        promoCode: safeDiscountPercentage > 0 ? `${safeDiscountPercentage}% OFF` : "None" 
     };
 
     if (typeof recordPatientDetails === 'function') {
@@ -491,7 +324,7 @@ async function proceedToWhatsApp() {
     const encodedMessage = encodeURIComponent(message);
     const waUrl = `https://wa.me/919380116362?text=${encodedMessage}`;
     
-    // NOTE: Cart persistence is active! We do NOT clear the shoppingCart[] here.
+    // NOTE: Cart persistence is active! We do NOT clear the cartItems array here.
     window.open(waUrl, '_blank', 'noopener,noreferrer');
 }
 
@@ -573,8 +406,12 @@ function showTestDetail(testId) {
 
     const safeName = escapeHTML(test.name);
     const safePrice = escapeHTML(test.price);
+    const safeMrp = escapeHTML(test.mrp || test.price);
     const safeImportance = escapeHTML(test.importance);
     const safeParams = escapeHTML(test.params);
+    
+    // Calculate if there is a discount to show the MRP
+    const hasDiscount = parsePrice(test.mrp) > parsePrice(test.price);
 
     // Packages have a different layout than standalone tests
     let bodyHtml = test.isPackage ? `
@@ -599,8 +436,9 @@ function showTestDetail(testId) {
                     <!-- Sticky pricing box on desktop -->
                     <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 sticky top-32">
                         <div class="text-[9px] font-black text-gray-400 uppercase mb-2">Service Fee</div>
+                        ${hasDiscount ? `<div class="text-lg font-bold text-gray-400 line-through tracking-tight">MRP ₹${safeMrp}</div>` : ''}
                         <div class="text-5xl font-black brand-gradient-text tracking-tighter mb-8">₹${safePrice}</div>
-                        <button onclick="addToCart('${escapeHTML(test.id)}')" class="block w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-xl hover:scale-[1.02] active:scale-95 transition-all">Add to Cart</button>
+                        <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(test.id)}'))" class="block w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-xl hover:scale-[1.02] active:scale-95 transition-all">Add to Cart</button>
                     </div>
                 </div>
             </div>
@@ -609,9 +447,12 @@ function showTestDetail(testId) {
         <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-200 p-6 pb-8 z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[2rem] flex justify-between items-center">
             <div>
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Service Fee</p>
-                <div class="text-3xl font-black brand-gradient-text tracking-tighter leading-none">₹${safePrice}</div>
+                <div class="flex items-baseline gap-2">
+                    <div class="text-3xl font-black brand-gradient-text tracking-tighter leading-none">₹${safePrice}</div>
+                    ${hasDiscount ? `<div class="text-sm font-bold text-gray-400 line-through">₹${safeMrp}</div>` : ''}
+                </div>
             </div>
-            <button onclick="addToCart('${escapeHTML(test.id)}')" class="px-8 py-4 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Add to Cart</button>
+            <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(test.id)}'))" class="px-8 py-4 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Add to Cart</button>
         </div>
     `;
     switchView('test-detail');
@@ -632,15 +473,21 @@ function renderTests(tests) {
     sorted.forEach(test => {
         const card = document.createElement('div');
         const isPkg = test.isPackage;
+        const hasDiscount = parsePrice(test.mrp) > parsePrice(test.price);
+        const safeMrp = escapeHTML(test.mrp || test.price);
+
         // Packages get a slight blue background to stand out
         card.className = `test-card p-8 rounded-[2.5rem] shadow-sm flex flex-col h-full ${isPkg ? 'bg-brand-blue/5 border-brand-blue/20' : 'bg-white'}`;
         card.innerHTML = `
             <div class="flex justify-between items-start mb-6 cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')">
                 <h4 class="text-lg font-black text-gray-900 leading-tight text-left hover:text-brand-blue transition-colors">${escapeHTML(test.name)}</h4>
-                <span class="text-xl font-black brand-gradient-text ml-4 shrink-0">₹${escapeHTML(test.price)}</span>
+                <div class="text-right shrink-0 ml-4">
+                    ${hasDiscount ? `<div class="text-xs font-bold text-gray-400 line-through tracking-tight">₹${safeMrp}</div>` : ''}
+                    <div class="text-xl font-black brand-gradient-text">₹${escapeHTML(test.price)}</div>
+                </div>
             </div>
             ${isPkg ? `<p class="text-[10px] text-brand-blue font-black uppercase tracking-widest mb-4 text-left">Health Package</p><div class="bg-gray-50/80 p-5 rounded-2xl flex-grow mb-6 text-left cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')"><p class="text-[10px] text-gray-600 font-semibold italic line-clamp-2">${escapeHTML(test.params)}</p></div>` : `<div class="flex-grow cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')"></div>`}
-            <button onclick="addToCart('${escapeHTML(test.id)}')" class="w-full py-3 mt-4 bg-brand-cyan/10 text-brand-blue hover:bg-brand-blue hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors">Add to Cart</button>
+            <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(test.id)}'))" class="w-full py-3 mt-4 bg-brand-cyan/10 text-brand-blue hover:bg-brand-blue hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors">Add to Cart</button>
         `;
         container.appendChild(card);
     });
@@ -660,6 +507,9 @@ function populateFeaturedPackages() {
     featuredIds.forEach(id => {
         const pkg = rateCard.find(t => t.id === id);
         if(pkg) {
+            const hasDiscount = parsePrice(pkg.mrp) > parsePrice(pkg.price);
+            const safeMrp = escapeHTML(pkg.mrp || pkg.price);
+
             const card = document.createElement('div');
             // Give 'p-5' a special "Most Popular" glow and scale
             card.className = `bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-xl transition-all ${id==='p-5' ? 'transform scale-[1.03] z-10 border-2 border-brand-cyan/20 shadow-2xl relative' : ''}`;
@@ -669,10 +519,13 @@ function populateFeaturedPackages() {
                 <div class="cursor-pointer" onclick="showTestDetail('${escapeHTML(pkg.id)}')">
                     <h3 class="text-2xl font-black text-gray-900 mb-2 hover:text-brand-blue transition-colors">${escapeHTML(pkg.name)}</h3>
                     <p class="text-[11px] text-gray-400 font-medium leading-relaxed mb-8 italic line-clamp-2">${escapeHTML(pkg.importance)}</p>
-                    <div class="text-3xl font-black text-brand-blue mb-8">₹${escapeHTML(pkg.price)}</div>
+                    <div class="mb-8">
+                        ${hasDiscount ? `<div class="text-sm font-bold text-gray-400 line-through tracking-tight">MRP ₹${safeMrp}</div>` : ''}
+                        <div class="text-3xl font-black text-brand-blue leading-none">₹${escapeHTML(pkg.price)}</div>
+                    </div>
                 </div>
                 <div class="mt-auto">
-                    <button onclick="addToCart('${escapeHTML(pkg.id)}')" class="w-full py-4 ${id==='p-5' ? 'brand-gradient-bg text-white shadow-xl hover:scale-[1.02]' : 'bg-gray-50 text-brand-blue hover:bg-gray-100'} text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all">Add to Cart</button>
+                    <button onclick="addToCart(rateCard.find(t => t.id === '${escapeHTML(pkg.id)}'))" class="w-full py-4 ${id==='p-5' ? 'brand-gradient-bg text-white shadow-xl hover:scale-[1.02]' : 'bg-gray-50 text-brand-blue hover:bg-gray-100'} text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all">Add to Cart</button>
                 </div>
             `;
             container.appendChild(card);

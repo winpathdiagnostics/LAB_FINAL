@@ -135,38 +135,26 @@ function removePromoCode() {
  */
 function updateBillingDisplay() {
     let subtotal = 0;
-    let standaloneSubtotal = 0;
     let totalMrp = 0;
     
-    // 1. Calculate Base Total & MRP & Standalone Subtotal
+    // 1. Calculate Base Total & MRP
     cartItems.forEach(item => {
         const itemPrice = parsePrice(item.price);
         subtotal += itemPrice;
         totalMrp += parsePrice(item.mrp || item.price); // Fallback to price if MRP is missing
-        
-        // If it's not a package, it's a standalone test
-        if (!item.isPackage) {
-            standaloneSubtotal += itemPrice;
-        }
     });
 
-    // 2. Auto Discount (10% on standalone tests if their total is > 1000)
-    let autoDiscountAmount = 0;
-    if (standaloneSubtotal > 1000) {
-        autoDiscountAmount = (standaloneSubtotal * 10) / 100;
-    }
-
-    // 3. Promo Code Discount (Applies to the whole subtotal)
+    // 2. Promo Code Discount (Applies to the whole subtotal)
     let promoDiscountAmount = (subtotal * appliedPromoDiscount) / 100;
 
-    // 4. Fetch Operational Fees from BILLING_CONFIG
+    // 3. Fetch Operational Fees from BILLING_CONFIG
     // Only apply fees if there is at least 1 item in the cart
     const activeCollectionFee = cartItems.length > 0 ? BILLING_CONFIG.homeCollectionFee : 0;
     const activeBookingFee = cartItems.length > 0 ? BILLING_CONFIG.bookingFee : 0;
     const activePlatformFee = cartItems.length > 0 ? BILLING_CONFIG.platformFee : 0;
 
-    // 5. Calculate Final Amounts
-    const totalDiscount = autoDiscountAmount + promoDiscountAmount;
+    // 4. Calculate Final Amounts
+    const totalDiscount = promoDiscountAmount;
     const finalTotal = subtotal + activeCollectionFee + activeBookingFee + activePlatformFee - totalDiscount;
     
     // Calculate total money saved for the patient (Difference between Market MRP and Final Cart Value)
@@ -206,17 +194,6 @@ function updateBillingDisplay() {
     if (document.getElementById('bill-booking')) document.getElementById('bill-booking').innerText = `₹${activeBookingFee.toFixed(2)}`;
     if (document.getElementById('bill-platform')) document.getElementById('bill-platform').innerText = `₹${activePlatformFee.toFixed(2)}`;
     
-    // Render Auto Discount
-    const autoRow = document.getElementById('auto-discount-row');
-    if (autoRow) {
-        if (autoDiscountAmount > 0) {
-            autoRow.classList.remove('hidden');
-            document.getElementById('bill-auto-discount').innerText = `-₹${autoDiscountAmount.toFixed(2)}`;
-        } else {
-            autoRow.classList.add('hidden');
-        }
-    }
-
     // Render Promo Discount
     const promoRow = document.getElementById('promo-discount-row');
     const applyBtn = document.getElementById('promo-apply-btn');

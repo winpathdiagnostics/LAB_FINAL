@@ -273,20 +273,17 @@ async function proceedToWhatsApp() {
 
     message += `*Selected Tests:*\n`;
     let subtotal = 0;
-    let standaloneSubtotal = 0;
     
     cartItems.forEach((item, index) => {
         message += `${index + 1}. ${item.name} (₹${item.price})\n`;
         const p = safeParsePrice(item.price);
         subtotal += p;
-        if (!item.isPackage) standaloneSubtotal += p;
     });
 
     let config = typeof BILLING_CONFIG !== 'undefined' ? BILLING_CONFIG : { homeCollectionFee: 0, bookingFee: 0, platformFee: 0 };
     
-    let autoDiscountAmount = standaloneSubtotal > 1000 ? (standaloneSubtotal * 10) / 100 : 0;
     let promoDiscountAmount = typeof appliedPromoDiscount !== 'undefined' ? (subtotal * appliedPromoDiscount) / 100 : 0;
-    let totalDiscount = autoDiscountAmount + promoDiscountAmount;
+    let totalDiscount = promoDiscountAmount;
 
     const totalFees = config.homeCollectionFee + config.bookingFee + config.platformFee;
     const total = subtotal + totalFees - totalDiscount;
@@ -297,9 +294,6 @@ async function proceedToWhatsApp() {
     if (config.bookingFee > 0) message += `Booking Fee: ₹${config.bookingFee}\n`;
     if (config.platformFee > 0) message += `Platform Fee: ₹${config.platformFee}\n`;
     
-    if (autoDiscountAmount > 0) {
-        message += `Auto-Discount (Tests >1000): -₹${autoDiscountAmount.toFixed(2)}\n`;
-    }
     if (promoDiscountAmount > 0) {
         message += `Promo Code (${typeof appliedPromoCodeStr !== 'undefined' ? appliedPromoCodeStr : ''}): -₹${promoDiscountAmount.toFixed(2)}\n`;
     }
@@ -325,7 +319,7 @@ async function proceedToWhatsApp() {
         gpsLink: userLocationLink || "N/A",
         tests: cartItems.map(item => item.name).join(", "),
         totalAmount: Math.max(0, Math.round(total)),
-        promoCode: (typeof appliedPromoCodeStr !== 'undefined' && appliedPromoCodeStr) ? appliedPromoCodeStr : (autoDiscountAmount > 0 ? "AUTO10" : "None")
+        promoCode: (typeof appliedPromoCodeStr !== 'undefined' && appliedPromoCodeStr) ? appliedPromoCodeStr : "None"
     };
 
     if (typeof recordPatientDetails === 'function') {
@@ -420,7 +414,10 @@ function showTestDetail(testId) {
     const safeImportance = escapeHTML(test.importance);
     const safeParams = escapeHTML(test.params);
     
-    const hasDiscount = safeParsePrice(test.mrp) > safeParsePrice(test.price);
+    const priceNum = safeParsePrice(test.price);
+    const mrpNum = safeParsePrice(test.mrp);
+    const hasDiscount = mrpNum > priceNum;
+    const discountPercent = hasDiscount ? Math.round(((mrpNum - priceNum) / mrpNum) * 100) : 0;
 
     let bodyHtml = test.isPackage ? `
             <div class="space-y-12">
@@ -443,7 +440,7 @@ function showTestDetail(testId) {
                 <div class="hidden lg:block">
                     <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-100 sticky top-32">
                         <div class="text-[9px] font-black text-gray-400 uppercase mb-2">Service Fee</div>
-                        ${hasDiscount ? `<div class="text-lg font-bold text-gray-400 line-through tracking-tight">MRP ₹${safeMrp}</div>` : ''}
+                        ${hasDiscount ? `<div class="text-lg font-bold text-gray-400 tracking-tight"><span class="line-through">MRP ₹${safeMrp}</span> <span class="text-brand-green ml-2">(${discountPercent}% OFF)</span></div>` : ''}
                         <div class="text-5xl font-black brand-gradient-text tracking-tighter mb-8">₹${safePrice}</div>
                         <button onclick="addToCartById('${escapeHTML(test.id)}')" class="block w-full py-5 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-xl hover:scale-[1.02] active:scale-95 transition-all">Add to Cart</button>
                     </div>
@@ -455,7 +452,7 @@ function showTestDetail(testId) {
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Service Fee</p>
                 <div class="flex items-baseline gap-2">
                     <div class="text-3xl font-black brand-gradient-text tracking-tighter leading-none">₹${safePrice}</div>
-                    ${hasDiscount ? `<div class="text-sm font-bold text-gray-400 line-through">₹${safeMrp}</div>` : ''}
+                    ${hasDiscount ? `<div class="text-sm font-bold text-gray-400"><span class="line-through">₹${safeMrp}</span> <span class="text-brand-green ml-1">${discountPercent}% OFF</span></div>` : ''}
                 </div>
             </div>
             <button onclick="addToCartById('${escapeHTML(test.id)}')" class="px-8 py-4 brand-gradient-bg text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Add to Cart</button>
@@ -475,7 +472,11 @@ function renderTests(tests) {
     sorted.forEach(test => {
         const card = document.createElement('div');
         const isPkg = test.isPackage;
-        const hasDiscount = safeParsePrice(test.mrp) > safeParsePrice(test.price);
+        
+        const priceNum = safeParsePrice(test.price);
+        const mrpNum = safeParsePrice(test.mrp);
+        const hasDiscount = mrpNum > priceNum;
+        const discountPercent = hasDiscount ? Math.round(((mrpNum - priceNum) / mrpNum) * 100) : 0;
         const safeMrp = escapeHTML(test.mrp || test.price);
 
         card.className = `test-card p-8 rounded-[2.5rem] shadow-sm flex flex-col h-full ${isPkg ? 'bg-brand-blue/5 border-brand-blue/20' : 'bg-white'}`;
@@ -483,7 +484,7 @@ function renderTests(tests) {
             <div class="flex justify-between items-start mb-6 cursor-pointer" onclick="showTestDetail('${escapeHTML(test.id)}')">
                 <h4 class="text-lg font-black text-gray-900 leading-tight text-left hover:text-brand-blue transition-colors">${escapeHTML(test.name)}</h4>
                 <div class="text-right shrink-0 ml-4">
-                    ${hasDiscount ? `<div class="text-xs font-bold text-gray-400 line-through tracking-tight">₹${safeMrp}</div>` : ''}
+                    ${hasDiscount ? `<div class="text-xs font-bold text-gray-400 tracking-tight"><span class="line-through">₹${safeMrp}</span> <span class="text-brand-green ml-1">${discountPercent}% OFF</span></div>` : ''}
                     <div class="text-xl font-black brand-gradient-text">₹${escapeHTML(test.price)}</div>
                 </div>
             </div>
@@ -504,7 +505,10 @@ function populateFeaturedPackages() {
     featuredIds.forEach(id => {
         const pkg = rateCard.find(t => t.id === id);
         if(pkg) {
-            const hasDiscount = safeParsePrice(pkg.mrp) > safeParsePrice(pkg.price);
+            const priceNum = safeParsePrice(pkg.price);
+            const mrpNum = safeParsePrice(pkg.mrp);
+            const hasDiscount = mrpNum > priceNum;
+            const discountPercent = hasDiscount ? Math.round(((mrpNum - priceNum) / mrpNum) * 100) : 0;
             const safeMrp = escapeHTML(pkg.mrp || pkg.price);
 
             const card = document.createElement('div');
@@ -516,7 +520,7 @@ function populateFeaturedPackages() {
                     <h3 class="text-2xl font-black text-gray-900 mb-2 hover:text-brand-blue transition-colors">${escapeHTML(pkg.name)}</h3>
                     <p class="text-[11px] text-gray-400 font-medium leading-relaxed mb-8 italic line-clamp-2">${escapeHTML(pkg.importance)}</p>
                     <div class="mb-8">
-                        ${hasDiscount ? `<div class="text-sm font-bold text-gray-400 line-through tracking-tight">MRP ₹${safeMrp}</div>` : ''}
+                        ${hasDiscount ? `<div class="text-sm font-bold text-gray-400 tracking-tight"><span class="line-through">MRP ₹${safeMrp}</span> <span class="text-brand-green ml-2">${discountPercent}% OFF</span></div>` : ''}
                         <div class="text-3xl font-black text-brand-blue leading-none">₹${escapeHTML(pkg.price)}</div>
                     </div>
                 </div>

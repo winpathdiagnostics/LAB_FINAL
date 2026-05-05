@@ -9,18 +9,18 @@
 const BILLING_CONFIG = {
     // --- Standard Operational Fees (in ₹) ---
     // These are added to the final bill during the checkout process.
-    homeCollectionFee: 110,  // Charge for the phlebotomist visiting the patient's home
-    bookingFee: 30,          // Administrative fee for processing the digital booking
-    platformFee: 10,         // Fee for platform maintenance and tech infrastructure
+    homeCollectionFee: 100,  // Charge for the phlebotomist visiting the patient's home
+    bookingFee: 50,          // Administrative fee for processing the digital booking
+    platformFee: 0,         // Fee for platform maintenance and tech infrastructure
     
     // --- Discount Codes Dictionary ---
     // Format: "CODENAME": percentage_number
     // Add, edit, or remove promo codes here. The math in main.js will automatically
     // validate these codes and apply the corresponding percentage off the test subtotal.
     validDiscountCodes: {
-        "WINPATH20": 20,     // 20% off tests
-        "HEALTH50": 50,      // 50% off tests
-        "DRDSA10": 10        // 10% off tests
+        "WINPATH20": 0,     // 20% off tests
+        "HEALTH50": 0,      // 50% off tests
+        "DRDSA10": 0        // 10% off tests
     },
 
     // --- SERVICEABLE PINCODES (HOME COLLECTION RADIUS) ---

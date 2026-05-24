@@ -12,7 +12,10 @@ const healthPackages = [
     
     // --- SENIORS & SPECIALIZED ---
     { id: 'p-5', name: "Seniors Health Screen", mrp: "5,500", price: "3,499", isPackage: true, desc: "Age-related chronic monitoring.", importance: "Targets age-related risks including chronic inflammation, blood sugar stability, renal filtration, and bone mineral loss.", params: "CBC, HbA1c, Cardiac Profile, RFT, Vitamin D", category: { package: 'Senior' } },
-    { id: 'p-6', name: "PCOS Screen", mrp: "4,500", price: "2,999", isPackage: true, desc: "Reproductive hormonal panel.", importance: "Clinical evaluation of hormonal imbalance and insulin resistance associated with PCOS symptoms.", params: "FSH, LH, Prolactin, Insulin (F), Testosterone", category: { package: 'Women' } }
+    { id: 'p-6', name: "PCOS Screen", mrp: "4,500", price: "2,999", isPackage: true, desc: "Reproductive hormonal panel.", importance: "Clinical evaluation of hormonal imbalance and insulin resistance associated with PCOS symptoms.", params: "FSH, LH, Prolactin, Insulin (F), Testosterone", category: { package: 'Women' } },
+
+    // --- SPECIALIZED CARDIAC ---
+    { id: 'p-7', name: "Cardiac Health Package", mrp: "5,900", price: "3,999", isPackage: true, desc: "Comprehensive cardiac & metabolic risk evaluation.", importance: "Crucial for assessing early warning signs of cardiovascular disease, systemic inflammation, and metabolic risk factors like diabetes that contribute to heart conditions.", params: "Lipid Profile, hs-CRP, Homocysteine, HbA1c, Fasting Sugar", category: { package: 'LifeStyle', condition: 'Cardiovascular' } }
 ];
 
 // =====================================================================
@@ -32,10 +35,10 @@ let investigations = [
     { id: 'i-10', name: "AEC (Absolute Eosinophil Count)", mrp: "350", price: "250", params: "Eosinophil Count", category: { risk: 'Lungs' } },
 
     // --- DIABETES & METABOLIC ---
-    { id: 'i-11', name: "Glucose Fasting (FBS)", mrp: "250", price: "150", params: "Sugar (F)", category: { risk: 'Diabetes', condition: 'Diabetes' } },
+    { id: 'i-11', name: "Glucose Fasting (FBS)", mrp: "250", price: "150", params: "Sugar (F)", category: { risk: 'Diabetes', condition: 'Cardiovascular' } },
     { id: 'i-12', name: "Glucose Post Prandial (PPBS)", mrp: "250", price: "150", params: "Sugar (PP)", category: { risk: 'Diabetes', condition: 'Diabetes' } },
     { id: 'i-13', name: "Glucose Random (RBS)", mrp: "250", price: "150", params: "Sugar (Random)", category: { risk: 'Diabetes', condition: 'Diabetes' } },
-    { id: 'i-14', name: "HbA1c", mrp: "850", price: "600", params: "Glycated Hemoglobin", category: { risk: 'Diabetes', condition: 'Diabetes' } },
+    { id: 'i-14', name: "HbA1c", mrp: "850", price: "600", params: "Glycated Hemoglobin", category: { risk: 'Diabetes', condition: 'Cardiovascular' } },
     { id: 'i-15', name: "Insulin Fasting", mrp: "1400", price: "950", params: "Fasting Insulin", category: { risk: 'Diabetes', condition: 'Obesity' } },
     { id: 'i-16', name: "Insulin PP", mrp: "1400", price: "950", params: "Post Prandial Insulin", category: { risk: 'Diabetes', condition: 'Obesity' } },
     { id: 'i-17', name: "C-Peptide", mrp: "1800", price: "1200", params: "C-Peptide Fasting", category: { risk: 'Diabetes' } },
@@ -50,7 +53,7 @@ let investigations = [
     { id: 'i-24', name: "Troponin T", mrp: "2500", price: "1800", params: "hs-Troponin T", category: { risk: 'Heart' } },
     { id: 'i-25', name: "CPK Total", mrp: "950", price: "650", params: "Creatine Phosphokinase", category: { risk: 'Heart' } },
     { id: 'i-26', name: "CPK-MB", mrp: "1200", price: "850", params: "CPK-MB Isoenzyme", category: { risk: 'Heart' } },
-    { id: 'i-27', name: "Homocysteine", mrp: "2200", price: "1500", params: "Homocysteine Levels", category: { risk: 'Heart' } },
+    { id: 'i-27', name: "Homocysteine", mrp: "2200", price: "1500", params: "Homocysteine Levels", category: { risk: 'Heart', condition: 'Cardiovascular' } },
 
     // --- LIVER FUNCTION (HEPATIC) ---
     { id: 'i-28', name: "Liver Function Test (LFT)", mrp: "1400", price: "950", params: "SGOT, SGPT, Bilirubin, ALP, Proteins", category: { risk: 'Liver', condition: 'Gut Health' } },
